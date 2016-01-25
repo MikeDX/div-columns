@@ -48,7 +48,7 @@ put_screen(0,205);
 
 //joystick();
 
-while(!key(_space))
+while(!key(_space) && timer[0]<500)
 //mouse.x=mouse.x-(mouse.x%8);
 //mouse.graph++;
 
