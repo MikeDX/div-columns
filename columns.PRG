@@ -27,10 +27,13 @@ set_mode(320224);
 
 load_fpg("columns/columns.FPG");
 
+
 put_screen(0,209);
 while(timer[0]<200);
 frame;
 end
+
+loop
 
 graph=206;
 x=160;
@@ -68,8 +71,39 @@ put_screen(0,203);
 game(16,8,0);
 game(208,8,1);
 
-loop
+while(timer[0]<1000)
 frame;
+end
+
+signal(type game, s_kill_tree);
+
+
+put_screen(0,205);
+
+graph=206;
+x=160;
+y=50;
+
+//joystick();
+
+while(!key(_space) && timer[0]<1500)
+
+frame;
+
+end
+graph=0;
+
+put_screen(0,202);
+game(112,8,0);
+
+while(timer[0]<2000);
+frame;
+end
+signal(type game, s_kill_tree);
+
+
+timer[0]=0;
+
 end
 
 
@@ -136,10 +170,11 @@ process game(xpos,ypos,num)
 // start game engine in a scroll region starting x,y
 private
 falls=0;
+gaps=0;
 begin
 
 //x=reserved.id_scan;
-gameinfo[num].jewels=4-num;
+gameinfo[num].jewels=5;
 gameinfo[num].xpos=xpos;
 gameinfo[num].ypos=ypos;
 
@@ -157,6 +192,9 @@ gameinfo[num].grid[x].col[y]=-1;
 jewel(x,y,num);
 end
 end
+
+frame;
+
 
 loop
 
@@ -177,19 +215,36 @@ end
 end
 
 repeat
-falls=0;
+    falls=0;
+    gaps=0;
+    for(y=12;y>=0;y--)
+        for(x=0;x<6;x++)
+            if(gameinfo[num].grid[x].col[y]==-1)
+                gaps=1;
+                if(y>0)
+                    if(gameinfo[num].grid[x].col[y-1]>-1)
+                        gameinfo[num].grid[x].col[y]=gameinfo[num].grid[x].col[y-1];
+                        gameinfo[num].grid[x].col[y-1]=-1;
+                        falls=1;
+                    end
+                end
+            end
+        end
+    end
 
-for(y=12;y>0;y--)
-for(x=0;x<6;x++)
-if(gameinfo[num].grid[x].col[y]==-1 && gameinfo[num].grid[x].col[y-1]>-1)
-gameinfo[num].grid[x].col[y]=gameinfo[num].grid[x].col[y-1];
-gameinfo[num].grid[x].col[y-1]=-1;
-falls=1;
-
-end
-end
-end
 until (falls==0)
+
+frame;
+
+if(gaps==0)
+    for(y=12;y>=0;y--)
+        for(x=0;x<6;x++)
+            gameinfo[num].grid[x].col[y]=-1;
+        end
+    end
+end
+
+
 
 frame;
 
