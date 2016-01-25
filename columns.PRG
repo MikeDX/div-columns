@@ -32,7 +32,7 @@ struct gameinfo[3]
 
 END
 
-attract=0;
+attract=1;
 
 begin
 
@@ -84,6 +84,7 @@ frame;
 end
 
 signal(type game, s_kill_tree);
+delete_text(all_text);
 
 
 put_screen(0,204);
@@ -110,6 +111,7 @@ while(attract==0 || (!key(_esc) && timer[0]<2000));
 frame;
 end
 signal(type game, s_kill_tree);
+delete_text(all_text);
 
 
 timer[0]=0;
@@ -198,7 +200,7 @@ region=num+1;
 
 for(x=0;x<6;x++)
 for(y=12;y>=0;y--)
-gameinfo[num].grid[x].col[y]=-1;
+gameinfo[num].grid[x].col[y]=0;
 //rand(0,gameinfo[num].jewels);
 
 jewel(x,y,num);
@@ -254,12 +256,12 @@ repeat
     gaps=0;
     for(y=12;y>=0;y--)
         for(x=0;x<6;x++)
-            if(gameinfo[num].grid[x].col[y]==-1)
+            if(gameinfo[num].grid[x].col[y]==0)
                 gaps=1;
                 if(y>0)
-                    if(gameinfo[num].grid[x].col[y-1]>-1)
+                    if(gameinfo[num].grid[x].col[y-1]>0)
                         gameinfo[num].grid[x].col[y]=gameinfo[num].grid[x].col[y-1];
-                        gameinfo[num].grid[x].col[y-1]=-1;
+                        gameinfo[num].grid[x].col[y-1]=0;
                         falls=1;
                     end
                 end
@@ -285,7 +287,7 @@ if(attract==1)
 if(gaps==0)
     for(y=12;y>=0;y--)
         for(x=0;x<6;x++)
-            gameinfo[num].grid[x].col[y]=-1;
+            gameinfo[num].grid[x].col[y]=0;
         end
     end
 end
@@ -306,7 +308,7 @@ begin
 
 while(x<3)
 gameinfo[num].curr[x]=gameinfo[num].next[x];
-gameinfo[num].next[x]=rand(0,gameinfo[num].jewels-1);
+gameinfo[num].next[x]=rand(1,gameinfo[num].jewels);
 
 x++;
 end
@@ -322,11 +324,12 @@ process jewel(xpos,ypos,num)
 
 private
 
-jewelid=-1;
+jewelid=0;
 px=0;
 py=0;
 
 shimmer=0;
+//smashing=0;
 
 begin
 
@@ -334,14 +337,29 @@ region = num+1;
 x=xpos*16+gameinfo[num].xpos+8;
 y=ypos*16+gameinfo[num].ypos+8;
 
+write_int(0,x,y,4,&gameinfo[num].grid[xpos].col[ypos]);
+
+end
+
+process jewel2(num,xpos,ypos)
+
+private
+jewelid;
+px;
+py;
+
+shimmer;
+
+begin
+
 loop
     if(true) //gameinfo[num].played==1)
 // check if jewel has changed
     if(gameinfo[num].grid[xpos].col[ypos]!=jewelid)
         jewelid = gameinfo[num].grid[xpos].col[ypos];
         graph=0;
-        if(jewelid>-1)
-            graph = 1+jewelid*10;
+        if(jewelid>0)
+            graph = 1+(jewelid-1)*10;
         //    frame;//(50);
             frame;//(200);//(50);
         end
@@ -384,7 +402,7 @@ loop
     end
     */
 
-    if(jewelid>-1)
+    if(jewelid>0)
         if(shimmer==0)
             if(rand(0,500)>490)
                 shimmer=7;
@@ -401,61 +419,62 @@ loop
         end
     end
 
-    if(jewelid>-1)
-    if(1)
-            if(ypos>0)
-            if(gameinfo[num].grid[xpos].col[ypos-1]==jewelid &&
-               gameinfo[num].grid[xpos].col[ypos+1]==jewelid)
+    if(jewelid>0)
+    //if(1)
+        if(ypos>0)
+            if(abs(gameinfo[num].grid[xpos].col[ypos-1])==jewelid &&
+               abs(gameinfo[num].grid[xpos].col[ypos+1])==jewelid)
 
-                gameinfo[num].grid[xpos].col[ypos-1]=-1;
-                gameinfo[num].grid[xpos].col[ypos]=-1;
-                gameinfo[num].grid[xpos].col[ypos-1]=-1;
+                gameinfo[num].grid[xpos].col[ypos-1]=-jewelid;
+                //gameinfo[num].grid[xpos].col[ypos]=0;
+                gameinfo[num].grid[xpos].col[ypos-1]=-jewelid;
                 gameinfo[num].matched=1;
 
                 //jewelid=-1;
             end
-            end
+        end
 
-            if(xpos>0)
-            if(gameinfo[num].grid[xpos-1].col[ypos]==jewelid &&
-               gameinfo[num].grid[xpos+1].col[ypos]==jewelid)
+        if(xpos>0 && xpos<5 )
+            if(abs(gameinfo[num].grid[xpos-1].col[ypos])==jewelid &&
+               abs(gameinfo[num].grid[xpos+1].col[ypos])==jewelid)
 
-                gameinfo[num].grid[xpos-1].col[ypos]=-1;
-                gameinfo[num].grid[xpos+1].col[ypos]=-1;
-                gameinfo[num].grid[xpos].col[ypos]=-1;
+                gameinfo[num].grid[xpos-1].col[ypos]=-jewelid;
+                gameinfo[num].grid[xpos+1].col[ypos]=-jewelid;
+                //gameinfo[num].grid[xpos].col[ypos]=-1;
                 gameinfo[num].matched=1;
 //jewelid=-1;
             end
+
             if(ypos>0)
-            if(gameinfo[num].grid[xpos-1].col[ypos-1]==jewelid &&
-               gameinfo[num].grid[xpos+1].col[ypos+1]==jewelid)
+                if(abs(gameinfo[num].grid[xpos-1].col[ypos-1])==jewelid &&
+                   abs(gameinfo[num].grid[xpos+1].col[ypos+1])==jewelid)
 
-                gameinfo[num].grid[xpos-1].col[ypos-1]=-1;
-                gameinfo[num].grid[xpos+1].col[ypos+1]=-1;
-                gameinfo[num].grid[xpos].col[ypos]=-1;
-                gameinfo[num].matched=1;
+                    gameinfo[num].grid[xpos-1].col[ypos-1]=-jewelid;
+                    gameinfo[num].grid[xpos+1].col[ypos+1]=-jewelid;
+                   // gameinfo[num].grid[xpos].col[ypos]=-1;
+                    gameinfo[num].matched=1;
 //jewelid=-1;
-            end
+                end
 
 
-            if(gameinfo[num].grid[xpos-1].col[ypos+1]==jewelid &&
-               gameinfo[num].grid[xpos+1].col[ypos-1]==jewelid)
+                if(abs(gameinfo[num].grid[xpos-1].col[ypos+1])==jewelid &&
+                   abs(gameinfo[num].grid[xpos+1].col[ypos-1])==jewelid)
 
-                gameinfo[num].grid[xpos-1].col[ypos+1]=-1;
-                gameinfo[num].grid[xpos+1].col[ypos-1]=-1;
-                gameinfo[num].grid[xpos].col[ypos]=-1;
-                gameinfo[num].matched=1;
+                    gameinfo[num].grid[xpos-1].col[ypos+1]=-jewelid;
+                    gameinfo[num].grid[xpos+1].col[ypos-1]=-jewelid;
+                //    gameinfo[num].grid[xpos].col[ypos]=-1;
+                    gameinfo[num].matched=1;
 //jewelid=-1;
-            end
-            end
-
+                end
             end
 
         end
 
+    //    end
 
-     end
+
     end
+end
 
     frame;//(50);
     //(50);//(50);//(50);
@@ -562,10 +581,11 @@ repeat
 
     if(timer[1]>dropnext)
         dropnext=timer[1]+dropinter;
-        if(y<12*16 && gameinfo[num].grid[xpos].col[ypos-1+(1*(ypos<1))]==-1)
+        if(y<12*16 && gameinfo[num].grid[xpos].col[ypos-1+(1*(ypos<1))]==0)
             y+=8;
             if(y%16==0)
                 ypos++;
+                frame;
             end
 
             if(y==32)
