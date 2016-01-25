@@ -27,6 +27,7 @@ struct gameinfo[3]
 //    nexty;
     jewels;
     played=1;
+    playing=0;
 
 
 END
@@ -73,7 +74,8 @@ graph=0;
 
 put_screen(0,203);
 game(16,8,0);
-//game(208,8,1);
+game(208,8,1);
+//game(112,8,2);
 
 frame;
 
@@ -214,9 +216,12 @@ loop
 //for(x=0;x<6;x++)
 //for(y=0;y<14;y++)
 if(!attract)
-    if(gameinfo[num].played==2)
+    if(!gameinfo[num].playing)
+    //gameinfo[num].played==2)
+   //     break;
         player(num);
-        gameinfo[num].played=0;
+   //     gameinfo[num].played=0;
+        gameinfo[num].playing=1;
     end
 
 end
@@ -241,7 +246,7 @@ else
 
 end
 
-if(gameinfo[num].played==1)
+//if(gameinfo[num].played==1)
 repeat
 
 repeat
@@ -269,9 +274,9 @@ frame;
 until(gameinfo[num].matched==0);
 
 // allow player respawn
-gameinfo[num].played=2;
+//gameinfo[num].played=2;
 
-end
+//end
 
 //gameinfo[num].played=1;
 //frame;
@@ -516,19 +521,32 @@ begin
 gameinfo[0].played=0;
 region=num+1;
 
+
+
+
+// show sprites
+loop
+
 for(x=0;x<3;x++)
     gameinfo[num].play[x]=gameinfo[num].next[x];
 end
 
-x=gameinfo[num].xpos+8+16*3;
-graph=300;
-y=-16;
-
-// show sprites
 pjewel(num,0);
 pjewel(num,1);
 pjewel(num,2);
 
+
+xpos=3;
+ypos=1;
+
+
+graph=300;
+y=-16;
+
+
+x=gameinfo[num].xpos+8+16*3;
+
+gameinfo[num].played=0;
 
 repeat
     if(key(_left) && xpos>0)
@@ -536,13 +554,17 @@ repeat
        xpos--;
 
     end
+    if(key(_right) && xpos<5)
+        x+=16;
+        xpos++;
+    end
 
 
     if(timer[1]>dropnext)
         dropnext=timer[1]+dropinter;
-        if(y<12*16 && gameinfo[num].grid[xpos].col[ypos-2+(2*(ypos<2))]==-1)
+        if(y<12*16 && gameinfo[num].grid[xpos].col[ypos-1+(1*(ypos<1))]==-1)
             y+=8;
-            if((y+8)%16==0)
+            if(y%16==0)
                 ypos++;
             end
 
@@ -566,15 +588,16 @@ ypos=(y-(y%16))/16;
 
 //debug;
 
-gameinfo[num].grid[xpos].col[ypos]=gameinfo.play[2];
-gameinfo[num].grid[xpos].col[ypos-1]=gameinfo.play[1];
-gameinfo[num].grid[xpos].col[ypos-2]=gameinfo.play[0];
+gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
+gameinfo[num].grid[xpos].col[ypos-1]=gameinfo[num].play[1];
+gameinfo[num].grid[xpos].col[ypos-2]=gameinfo[num].play[0];
 //frame;
 //x=-1;
 frame(200);
 x=-1;
 frame(200);
 //frame(200);
+end
 
 end
 
