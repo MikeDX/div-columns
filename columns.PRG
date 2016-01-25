@@ -33,43 +33,51 @@ struct gameinfo[3]
 
 END
 
-attract=0;
+attract=1;
 
 begin
+
+timer[0]=0;
 
 set_mode(320240);
 
 load_fpg("columns/columns.FPG");
 
+// colour bars
 
 put_screen(0,209);
 while(timer[0]<200);
 frame;
 end
 
-loop
-
-graph=206;
-x=160;
-y=50;
-
 gameinfo[0].nextx=120;
 gameinfo[1].nextx=184;
 gameinfo[2].nextx=88;
+
+
+loop
+
+// title 1
+graph=206;
+x=160;
+y=50;
 
 //mouse.graph=70;
 
 //frame(20000);
 put_screen(0,205);
+gems();
 
 //joystick();
 
-while(!key(_space) && timer[0]<500)
-
+while(!key(_space) && timer[0]<1000)
 
 frame;
 
 end
+timer[0]=0;
+signal(type gems, s_kill_tree);
+
 
 graph=0;
 
@@ -84,6 +92,7 @@ while(attract==0 || (!key(_esc) && timer[0]<1000))
 frame;
 end
 
+timer[0]=0;
 signal(type game, s_kill_tree);
 delete_text(all_text);
 
@@ -97,18 +106,20 @@ y=50;
 //joystick();
 frame;
 
-while(!key(_space) && timer[0]<1500)
+while(!key(_space) && timer[0]<1000)
 
 frame;
 
 end
+timer[0]=0;
+
 graph=0;
 
-put_screen(0,202);
+put_screen(0,217);
 game(112,8,2);
 frame;
 
-while(attract==0 || (!key(_esc) && timer[0]<2000));
+while(attract==0 || (!key(_esc) && timer[0]<1000));
 frame;
 end
 signal(type game, s_kill_tree);
@@ -184,7 +195,12 @@ process game(xpos,ypos,num)
 private
 falls=0;
 gaps=0;
+gx=0;
+gy=0;
+
 begin
+
+graph=301;
 
 //x=reserved.id_scan;
 gameinfo[num].jewels=3+rand(0,3);
@@ -196,17 +212,20 @@ shownext(num);
 
 getnext(num);
 //getnext(num);
-graph=70;
+//graph=70;
 region=num+1;
 
-for(x=0;x<6;x++)
-for(y=12;y>=0;y--)
-gameinfo[num].grid[x].col[y]=0;
+for(gx=0;gx<6;gx++)
+for(gy=12;gy>=0;gy--)
+gameinfo[num].grid[gx].col[gy]=0;
 //rand(0,gameinfo[num].jewels);
 
-jewel(x,y,num);
+jewel(gx,gy,num);
 end
 end
+
+x=gameinfo[num].xpos+3*16;
+y=7*16;
 
 //frame;
 
@@ -230,12 +249,12 @@ if(!attract)
 end
 
 if(attract==1)
-x=rand(0,5);
-y=0;//rand(0,12);
+gx=rand(0,5);
+gy=0;//rand(0,12);
 
-gameinfo[num].grid[x].col[y]=gameinfo[num].next[0];//rand(0,gameinfo[num].jewels-1);
-gameinfo[num].grid[x].col[y+1]=gameinfo[num].next[1];
-gameinfo[num].grid[x].col[y+2]=gameinfo[num].next[2];
+gameinfo[num].grid[gx].col[gy]=gameinfo[num].next[0];//rand(0,gameinfo[num].jewels-1);
+gameinfo[num].grid[gx].col[gy+1]=gameinfo[num].next[1];
+gameinfo[num].grid[gx].col[gy+2]=gameinfo[num].next[2];
 //frame;
 
 //jewel(x,y,num);
@@ -255,14 +274,14 @@ repeat
 repeat
     falls=0;
     gaps=0;
-    for(y=12;y>=0;y--)
-        for(x=0;x<6;x++)
-            if(gameinfo[num].grid[x].col[y]==0)
+    for(gy=12;gy>=0;gy--)
+        for(gx=0;gx<6;gx++)
+            if(gameinfo[num].grid[gx].col[gy]==0)
                 gaps=1;
-                if(y>0)
-                    if(gameinfo[num].grid[x].col[y-1]>0)
-                        gameinfo[num].grid[x].col[y]=gameinfo[num].grid[x].col[y-1];
-                        gameinfo[num].grid[x].col[y-1]=0;
+                if(gy>0)
+                    if(gameinfo[num].grid[gx].col[gy-1]>0)
+                        gameinfo[num].grid[gx].col[gy]=gameinfo[num].grid[gx].col[gy-1];
+                        gameinfo[num].grid[gx].col[gy-1]=0;
                         falls=1;
                     end
                 end
@@ -286,9 +305,9 @@ until(gameinfo[num].matched==0);
 //gameinfo[num].played=0;
 if(attract==1)
 if(gaps==0)
-    for(y=12;y>=0;y--)
-        for(x=0;x<6;x++)
-            gameinfo[num].grid[x].col[y]=0;
+    for(gy=12;gy>=0;gy--)
+        for(gx=0;gx<6;gx++)
+            gameinfo[num].grid[gx].col[gy]=0;
         end
     end
 end
@@ -706,3 +725,76 @@ until (father.x==-1)
 
 end
 
+
+process gems()
+
+begin
+
+//graph=219;
+
+gem1(219,-2);
+gem1(220,-1);
+gem1(221,0);
+gem1(220,1);
+gem1(219,2);
+
+loop
+
+
+frame;
+end
+
+end
+
+
+process gem1(graph,xdir)
+
+private
+ydir;
+count;
+begin
+
+loop
+count=0;
+
+x=160;
+y=116;
+if(abs(xdir)==1);
+y+=2;
+end
+if(abs(xdir)==2);
+y+=7;
+end
+
+ydir=-6;//-(2-abs(xdir));
+size=100;
+while(count<30)//y<200+6*(abs(xdir)))//!out_region(id,0));
+graph++;
+if(graph==222)
+graph=219;
+end
+
+count++;
+
+if(ydir<0)
+x=x+xdir;
+else
+//size;
+end
+
+y+=ydir;
+if(ydir<5)
+ydir++;
+end
+if(y>120 && size>0)
+size-=10;
+end
+
+frame;
+
+end
+
+end
+
+
+end
