@@ -70,6 +70,7 @@ gameinfo[2].nextx=88;
 //main operating loop
 loop
 
+
     // columns title
     graph=206;
     x=160;
@@ -83,13 +84,10 @@ loop
 
 
     // show this screen for 10 seconds
-    while(!key(_space) && timer[0]<1000)
+    while(!key(_space))// && timer[0]<1000)
         frame;
     end
 
-    if(key(_space))
-       attract=0;
-    end
 
     // reset timer
     timer[0]=0;
@@ -101,6 +99,12 @@ loop
 
     // hide "columns" title
     graph=0;
+
+
+
+    if(key(_space))
+       attract=0;
+    end
 
     // show the arcade (two player) games grid
     put_screen(0,203);
@@ -133,7 +137,7 @@ loop
     frame;
 
     // show this tite for 10 seconds or until space pressed
-    while(!key(_space) && timer[0]<1000)
+    while(!key(_space))// && timer[0]<1000)
         frame;
     end
 
@@ -185,7 +189,7 @@ gy=0;
 
 begin
     // background grid
-    graph=301;
+    //graph=301;
     x=xpos+3*16;
     y=7*16;
 
@@ -647,13 +651,19 @@ xpos=3;
 ypos=1;
 d=0;
 gameover=0;
-
+tp=0;
 begin
 gameinfo[0].played=0;
 region=num+1;
 
 //write_int(0,gameinfo[num].xpos,gameinfo[num].ypos,4,&y);
 //write_int(0,gameinfo[num].xpos,gameinfo[num].ypos+8,4,&ypos);
+//show player jewels
+
+pjewel(num,0);
+pjewel(num,1);
+pjewel(num,2);
+
 
 
 
@@ -664,14 +674,8 @@ for(x=0;x<3;x++)
     gameinfo[num].play[x]=gameinfo[num].next[x];
 end
 d=0;
-pjewel(num,0);
-pjewel(num,1);
-pjewel(num,2);
-
-
 xpos=3;
 ypos=-1;
-
 
 graph=300;
 y=-24;
@@ -683,14 +687,29 @@ gameinfo[num].played=0;
 
 repeat
 
+    if(scan_code == _space)
+        tp=gameinfo[num].play[0];
+        gameinfo[num].play[0]=gameinfo[num].play[1];
+        gameinfo[num].play[1]=gameinfo[num].play[2];
+        gameinfo[num].play[2]=tp;
+    end
+
     if(scan_code == _left && xpos>0)
+       if(gameinfo[num].grid[xpos-1].col[ypos+14*(ypos==-1)]==0)
+       //gameinfo[num].play[2];
+
        x-=16;
        xpos--;
+       end
+
 
     end
     if(scan_code == _right && xpos<5)
-        x+=16;
-        xpos++;
+        if(gameinfo[num].grid[xpos+1].col[ypos+14*(ypos==-1)]==0)
+            x+=16;
+            xpos++;
+        end
+
     end
 
     if(key(_down) || timer[1]>dropnext)
@@ -699,10 +718,9 @@ repeat
         //if(y%16!=0 || gameinfo[num].grid[xpos].col[ypos]==0)
         d=1-d;
         y+=8;
-
         if(y==32)
-                 getnext(num);
-            end
+            getnext(num);
+        end
 
         //frame;
 
@@ -730,10 +748,11 @@ repeat
                 gameinfo[num].gameover=1;
             end
             gameinfo[num].played=1;
-            frame;
-        end
+         //   frame;
         end
 
+        end
+        //frame(1);
     end
 
 /*
@@ -801,18 +820,25 @@ end
 
 process pjewel(num,idx)
 
+// show the jewels the player has
+
 begin
+priority=father.priority-1;
+
 region=num+1;
 graph=(gameinfo[num].play[idx]-1)*10+1;
+//repeat
+loop
+graph=(gameinfo[num].play[idx]-1)*10+1;
 
-repeat
 //if(gameinfo[num].played==0)
 x=father.x;
 y=father.y-16+idx*16;
 
 
 frame;
-until (gameinfo[num].played==1)
+end
+//until (gameinfo[num].played==1)
 
 //loop
 frame(200);
