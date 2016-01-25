@@ -7,16 +7,15 @@ struct gameinfo[3]
          col[14];
     end
 
-  //  [12];
-//    gridy[6];
     xpos;
     ypos;
     score;
     level;
     curr[3];
     next[3];
+
     nextx;
-    nexty;
+//    nexty;
     jewels;
 
 END
@@ -40,9 +39,8 @@ x=160;
 y=50;
 
 gameinfo[0].nextx=120;
-gameinfo[0].nextx=184;
-gameinfo[1].nexty=8;
-gameinfo[1].nexty=8;
+gameinfo[1].nextx=184;
+gameinfo[2].nextx=88;
 
 //mouse.graph=70;
 
@@ -90,7 +88,7 @@ end
 graph=0;
 
 put_screen(0,202);
-game(112,8,0);
+game(112,8,2);
 frame;
 
 while(!key(_esc) && timer[0]<2000);
@@ -171,11 +169,13 @@ gaps=0;
 begin
 
 //x=reserved.id_scan;
-gameinfo[num].jewels=5;
+gameinfo[num].jewels=3+rand(0,3);
 gameinfo[num].xpos=xpos;
 gameinfo[num].ypos=ypos;
 
 define_region(num+1,xpos,ypos,96,208);
+shownext(num);
+
 getnext(num);
 getnext(num);
 graph=70;
@@ -197,19 +197,22 @@ loop
 
 //x=mouse.x;
 //y=mouse.y;
-for(y=12;y>=0;y--)
-for(x=0;x<6;x++)
+//for(y=12;y>=0;y--)
+//for(x=0;x<6;x++)
 //for(y=0;y<14;y++)
 
-//x=rand(0,5);
+x=rand(0,5);
 y=0;//rand(0,12);
 
-gameinfo[num].grid[x].col[y]=rand(0,gameinfo[num].jewels-1);
+gameinfo[num].grid[x].col[y]=gameinfo[num].next[0];//rand(0,gameinfo[num].jewels-1);
+gameinfo[num].grid[x].col[y+1]=gameinfo[num].next[1];
+gameinfo[num].grid[x].col[y+2]=gameinfo[num].next[2];
 //frame;
 
 //jewel(x,y,num);
-end
-end
+//end
+//end
+getnext(num);
 
 repeat
     falls=0;
@@ -256,7 +259,7 @@ begin
 
 while(x<3)
 gameinfo[num].curr[x]=gameinfo[num].next[x];
-gameinfo[num].next[x]=rand(0,gameinfo[num].jewels);
+gameinfo[num].next[x]=rand(0,gameinfo[num].jewels-1);
 
 x++;
 end
@@ -265,13 +268,6 @@ return;
 
 end
 
-process next(num)
-
-
-begin
-
-
-end
 
 
 
@@ -418,3 +414,43 @@ end
 //graph=
 end
 
+
+process shownext(num)
+
+begin
+
+for(x=0;x<3;x++)
+next(num,x);
+end
+    loop
+        frame;
+    end
+
+end
+
+process next(num,idx)
+
+private
+
+jewelid=-1;
+
+begin
+
+x=gameinfo[num].nextx+8;
+y=16+idx*16;
+
+graph=1;
+//break;
+loop
+
+if(gameinfo[num].next[idx]!=jewelid)
+jewelid=gameinfo[num].next[idx];
+graph=1+jewelid*10;
+end
+
+frame;
+
+end
+
+
+end
