@@ -52,13 +52,6 @@ put_screen(0,205);
 //joystick();
 
 while(!key(_space) && timer[0]<500)
-//mouse.x=mouse.x-(mouse.x%8);
-//mouse.graph++;
-
-//if(mouse.graph==76)
-//mouse.graph=70;
-//end
-
 
 
 frame;
@@ -71,7 +64,9 @@ put_screen(0,203);
 game(16,8,0);
 game(208,8,1);
 
-while(timer[0]<1000)
+frame;
+
+while(!key(_esc) && timer[0]<1000)
 frame;
 end
 
@@ -85,6 +80,7 @@ x=160;
 y=50;
 
 //joystick();
+frame;
 
 while(!key(_space) && timer[0]<1500)
 
@@ -95,8 +91,9 @@ graph=0;
 
 put_screen(0,202);
 game(112,8,0);
+frame;
 
-while(timer[0]<2000);
+while(!key(_esc) && timer[0]<2000);
 frame;
 end
 signal(type game, s_kill_tree);
