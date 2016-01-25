@@ -731,12 +731,13 @@ process gems()
 begin
 
 //graph=219;
-
-gem1(219,-2);
-gem1(220,-1);
-gem1(221,0);
-gem1(220,1);
-gem1(219,2);
+for(y=-1;y<2;y++)
+gem1(219,-2,y);
+gem1(220,-1,y);
+gem1(221,0,y);
+gem1(220,1,y);
+gem1(219,2,y);
+end
 
 loop
 
@@ -747,7 +748,7 @@ end
 end
 
 
-process gem1(graph,xdir)
+process gem1(graph,xdir,yoff)
 
 private
 ydir;
@@ -768,7 +769,7 @@ end
 
 ydir=-6;//-(2-abs(xdir));
 size=100;
-while(count<30)//y<200+6*(abs(xdir)))//!out_region(id,0));
+while(count<40)//y<200+6*(abs(xdir)))//!out_region(id,0));
 graph++;
 if(graph==222)
 graph=219;
@@ -787,7 +788,11 @@ if(ydir<5)
 ydir++;
 end
 if(y>120 && size>0)
-size-=10;
+size-=8;
+end
+if(count==15)
+y+=4*(abs(yoff));
+x+=4*(yoff);
 end
 
 frame;
