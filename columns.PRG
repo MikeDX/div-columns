@@ -13,6 +13,7 @@ struct gameinfo[3]
 
     end
 
+    gameover=0;
 
     matched=0;
 
@@ -32,7 +33,7 @@ struct gameinfo[3]
 
 END
 
-attract=1;
+attract=0;
 
 begin
 
@@ -561,10 +562,12 @@ process player(num)
 
 
 private
-dropinter=10;
+dropinter=1;
 dropnext=0;
 xpos=3;
 ypos=1;
+
+gameover=0;
 
 begin
 gameinfo[0].played=0;
@@ -574,7 +577,7 @@ region=num+1;
 
 
 // show sprites
-loop
+repeat
 
 for(x=0;x<3;x++)
     gameinfo[num].play[x]=gameinfo[num].next[x];
@@ -590,7 +593,7 @@ ypos=1;
 
 
 graph=300;
-y=-16;
+y=-24;
 
 
 x=gameinfo[num].xpos+8+16*3;
@@ -637,17 +640,52 @@ xpos=(x-8-(gameinfo[num].xpos))/16;
 ypos=(y-(y%16))/16;
 
 //debug;
+if(ypos>=0)
+    gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
+    if(ypos>=1)
+        gameinfo[num].grid[xpos].col[ypos-1]=gameinfo[num].play[1];
+        if(ypos>=2)
+            gameinfo[num].grid[xpos].col[ypos-2]=gameinfo[num].play[0];
+        end
+    end
+else
+    gameinfo[num].gameover=1;
+end
 
-gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
-gameinfo[num].grid[xpos].col[ypos-1]=gameinfo[num].play[1];
-gameinfo[num].grid[xpos].col[ypos-2]=gameinfo[num].play[0];
+
 //frame;
 //x=-1;
 frame(200);
 x=-1;
 frame(200);
 //frame(200);
+until(gameinfo[num].gameover==1);
+
+graph=0;//301;
+x=gameinfo[num].xpos+3*16;
+y=240;
+//x=-1;
+frame;
+
+//debug;
+//z=-512;
+ypos=13;
+
+while(y>112);
+    ypos--;
+
+    for(xpos=0;xpos<5;xpos++)
+        gameinfo[num].grid[xpos].col[ypos]=0;
+    end
+
+    y-=16;
+    frame(200);
 end
+
+loop
+frame;
+end
+
 
 end
 
