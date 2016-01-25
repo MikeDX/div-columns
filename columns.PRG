@@ -20,6 +20,8 @@ struct gameinfo[3]
     gameover=0;
 
     matched=0;
+    checkmatch=0;
+    smash=0;
 
     xpos;
     ypos;
@@ -82,9 +84,11 @@ loop
 
     // show this screen for 10 seconds
     while(!key(_space) && timer[0]<1000)
-
         frame;
+    end
 
+    if(key(_space))
+       attract=0;
     end
 
     // reset timer
@@ -180,126 +184,118 @@ gx=0;
 gy=0;
 
 begin
+    // background grid
+    graph=301;
+    x=xpos+3*16;
+    y=7*16;
 
-graph=301;
+    // set number of random jewels in this game
+    gameinfo[num].jewels=3+rand(0,3);
+    // set the game zpos ypos
+    gameinfo[num].xpos=xpos;
+    gameinfo[num].ypos=ypos;
 
-//x=reserved.id_scan;
-gameinfo[num].jewels=3+rand(0,3);
-gameinfo[num].xpos=xpos;
-gameinfo[num].ypos=ypos;
+    // setup a region for this grid (makes the sprite hiding easy)
+    define_region(num+1,xpos,ypos,96,208);
 
-define_region(num+1,xpos,ypos,96,208);
-shownext(num);
+    // display the "next" jewels
+    shownext(num);
 
-getnext(num);
-//getnext(num);
-//graph=70;
-region=num+1;
+    // populate the "next" grid
+    getnext(num);
+    //frame;
 
-for(gx=0;gx<6;gx++)
-for(gy=12;gy>=0;gy--)
-gameinfo[num].grid[gx].col[gy]=0;
-//rand(0,gameinfo[num].jewels);
+    region=num+1;
 
-jewel(gx,gy,num);
-end
-end
-
-x=gameinfo[num].xpos+3*16;
-y=7*16;
-
-//frame;
-
-
-loop
-
-//x=mouse.x;
-//y=mouse.y;
-//for(y=12;y>=0;y--)
-//for(x=0;x<6;x++)
-//for(y=0;y<14;y++)
-if(!attract)
-    if(!gameinfo[num].playing)
-    //gameinfo[num].played==2)
-   //     break;
-        player(num);
-   //     gameinfo[num].played=0;
-        gameinfo[num].playing=1;
+    /// reset the grid to zero
+    // and spawn jewels
+    for(gx=0;gx<6;gx++)
+        for(gy=12;gy>=0;gy--)
+            gameinfo[num].grid[gx].col[gy]=0;
+            jewel(gx,gy,num);
+        end
     end
 
-end
 
-if(attract==1)
-gx=rand(0,5);
-gy=0;//rand(0,12);
+    loop
 
-gameinfo[num].grid[gx].col[gy]=gameinfo[num].next[0];//rand(0,gameinfo[num].jewels-1);
-gameinfo[num].grid[gx].col[gy+1]=gameinfo[num].next[1];
-gameinfo[num].grid[gx].col[gy+2]=gameinfo[num].next[2];
-//frame;
+        if(!gameinfo[num].playing)
+            player(num);
+            gameinfo[num].playing=1;
+        end
 
-//jewel(x,y,num);
-//end
-//end
-getnext(num);
+        // mini loop until piece have been placed
+        repeat
+            frame;
+        until(gameinfo[num].played==1);
 
-else
 
-// player loop
+        // once piece has been placed, check for "wins"
+        // and check for drops
 
-end
+        repeat  // while wins
 
-//if(gameinfo[num].played==1)
-repeat
+            // check for matches
+            gameinfo[num].checkmatch=1;
 
-repeat
-    falls=0;
-    gaps=0;
-    for(gy=12;gy>=0;gy--)
-        for(gx=0;gx<6;gx++)
-            if(gameinfo[num].grid[gx].col[gy]==0)
-                gaps=1;
-                if(gy>0)
-                    if(gameinfo[num].grid[gx].col[gy-1]>0)
-                        gameinfo[num].grid[gx].col[gy]=gameinfo[num].grid[gx].col[gy-1];
-                        gameinfo[num].grid[gx].col[gy-1]=0;
-                        falls=1;
+            frame;
+
+            if(gameinfo[num].matched>0)
+                gameinfo[num].smash=7;
+                repeat
+
+                    frame(300);
+                    gameinfo[num].smash--;
+                until(gameinfo[num].smash==0);
+                frame;
+            end
+
+
+            repeat  // while falls
+                falls=0;
+                gaps=0;
+                for(gy=12;gy>=0;gy--)
+
+                    for(gx=0;gx<6;gx++)
+
+                        if(gameinfo[num].grid[gx].col[gy]==0)
+                            gaps=1;
+
+                            if(gy>0)
+                                if(gameinfo[num].grid[gx].col[gy-1]>0)
+                                    gameinfo[num].grid[gx].col[gy]=gameinfo[num].grid[gx].col[gy-1];
+                                    gameinfo[num].grid[gx].col[gy-1]=0;
+                                    falls=1;
+                                end
+                            end
+                        end
+                    end
+                end
+
+            until (falls==0)
+
+            gameinfo[num].matched=0;
+
+            frame;
+
+        until(gameinfo[num].matched==0);
+
+        gameinfo[num].checkmatch=0;
+
+        if(attract==1)
+            if(gaps==0)
+                for(gy=12;gy>=0;gy--)
+                    for(gx=0;gx<6;gx++)
+                        gameinfo[num].grid[gx].col[gy]=0;
                     end
                 end
             end
         end
+
+        frame;
+        gameinfo[num].played=0;
+
     end
-
-until (falls==0)
-gameinfo[num].matched=0;
-
-frame;
-until(gameinfo[num].matched==0);
-
-// allow player respawn
-//gameinfo[num].played=2;
-
-//end
-
-//gameinfo[num].played=1;
-//frame;
-//gameinfo[num].played=0;
-if(attract==1)
-if(gaps==0)
-    for(gy=12;gy>=0;gy--)
-        for(gx=0;gx<6;gx++)
-            gameinfo[num].grid[gx].col[gy]=0;
-        end
-    end
-end
-end
-
-
-
-frame;
-
-end
-
 
 end
 
@@ -318,6 +314,38 @@ return;
 
 end
 
+
+process smash(xpos,ypos,num)
+
+begin
+graph=0;
+region=num+1;
+x=xpos*16+gameinfo[num].xpos+8;
+y=ypos*16+gameinfo[num].ypos+8;
+
+loop
+// if smashed
+if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
+
+    gameinfo[num].grid[xpos].col[ypos]=0;
+
+    repeat
+    //if(gameinfo[num].grid[xpos].col[ypos]<0)
+        graph=66-gameinfo[num].smash;
+   // end
+        frame;
+    until(gameinfo[num].smash==0);
+
+
+end
+
+frame;
+
+graph=0;
+
+end
+
+end
 
 
 
@@ -339,12 +367,12 @@ x=xpos*16+gameinfo[num].xpos+8;
 y=ypos*16+gameinfo[num].ypos+8;
 
 //write_int(0,x,y,4,&gameinfo[num].grid[xpos].col[ypos]);
-
+smash(xpos,ypos,num);
 loop
 //    if(true) //gameinfo[num].played==1)
 // check if jewel has changed
     if(abs(gameinfo[num].grid[xpos].col[ypos])!=jewelid)
-        jewelid = gameinfo[num].grid[xpos].col[ypos];
+        jewelid = abs(gameinfo[num].grid[xpos].col[ypos]);
         graph=0;
         if(jewelid>0)
             graph = 1+(jewelid-1)*10;
@@ -354,7 +382,58 @@ loop
         //frame;
 
     end
+//    frame;
+    if(gameinfo[num].checkmatch==1 && jewelid>0)
+
+        if(ypos>0)
+            if(abs(gameinfo[num].grid[xpos].col[ypos-1])==jewelid &&
+               abs(gameinfo[num].grid[xpos].col[ypos+1])==jewelid)
+
+                gameinfo[num].grid[xpos].col[ypos-1]=-jewelid;
+                gameinfo[num].grid[xpos].col[ypos]=-jewelid;
+                gameinfo[num].grid[xpos].col[ypos+1]=-jewelid;
+                gameinfo[num].matched=1;
+            end
+        end
+
+        if(xpos>0 && xpos<5 )
+            if(abs(gameinfo[num].grid[xpos-1].col[ypos])==jewelid &&
+               abs(gameinfo[num].grid[xpos+1].col[ypos])==jewelid)
+
+                gameinfo[num].grid[xpos-1].col[ypos]=-jewelid;
+                gameinfo[num].grid[xpos+1].col[ypos]=-jewelid;
+                gameinfo[num].grid[xpos].col[ypos]=-jewelid;
+                gameinfo[num].matched=1;
+            end
+
+            if(ypos>0)
+                if(abs(gameinfo[num].grid[xpos-1].col[ypos-1])==jewelid &&
+                   abs(gameinfo[num].grid[xpos+1].col[ypos+1])==jewelid)
+
+                    gameinfo[num].grid[xpos-1].col[ypos-1]=-jewelid;
+                    gameinfo[num].grid[xpos+1].col[ypos+1]=-jewelid;
+                    gameinfo[num].grid[xpos].col[ypos]=-jewelid;
+
+                    gameinfo[num].matched=1;
+                end
+
+
+                if(abs(gameinfo[num].grid[xpos-1].col[ypos+1])==jewelid &&
+                   abs(gameinfo[num].grid[xpos+1].col[ypos-1])==jewelid)
+
+                    gameinfo[num].grid[xpos-1].col[ypos+1]=-jewelid;
+                    gameinfo[num].grid[xpos+1].col[ypos-1]=-jewelid;
+                    gameinfo[num].grid[xpos].col[ypos]=-jewelid;
+                    gameinfo[num].matched=1;
+
+                end
+            end
+
+       end
+
+    end
     frame;
+
 end
 
 
@@ -562,17 +641,19 @@ process player(num)
 
 
 private
-dropinter=1;
+dropinter=100;
 dropnext=0;
 xpos=3;
 ypos=1;
-
+d=0;
 gameover=0;
 
 begin
 gameinfo[0].played=0;
 region=num+1;
 
+//write_int(0,gameinfo[num].xpos,gameinfo[num].ypos,4,&y);
+//write_int(0,gameinfo[num].xpos,gameinfo[num].ypos+8,4,&ypos);
 
 
 
@@ -582,14 +663,14 @@ repeat
 for(x=0;x<3;x++)
     gameinfo[num].play[x]=gameinfo[num].next[x];
 end
-
+d=0;
 pjewel(num,0);
 pjewel(num,1);
 pjewel(num,2);
 
 
 xpos=3;
-ypos=1;
+ypos=-1;
 
 
 graph=300;
@@ -601,6 +682,7 @@ x=gameinfo[num].xpos+8+16*3;
 gameinfo[num].played=0;
 
 repeat
+
     if(key(_left) && xpos>0)
        x-=16;
        xpos--;
@@ -611,15 +693,54 @@ repeat
         xpos++;
     end
 
+    if(key(_down) || timer[1]>dropnext)
+        dropnext=timer[1]+dropinter;
+        // check if block below is free
+        //if(y%16!=0 || gameinfo[num].grid[xpos].col[ypos]==0)
+        d=1-d;
+        y+=8;
 
+        if(y==32)
+                 getnext(num);
+            end
+
+        //frame;
+
+        if(d==0)
+            ypos++;
+        end
+
+        if(d==0)
+        if(ypos==13 || gameinfo[num].grid[xpos].col[ypos]!=0)
+            gameinfo[num].played=1;
+            y=y-8;
+
+            xpos=(x-8-(gameinfo[num].xpos))/16;
+            ypos=(y-(y%16))/16;
+
+
+            if(ypos>=0)
+                gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
+                if(ypos>=1)
+                    gameinfo[num].grid[xpos].col[ypos-1]=gameinfo[num].play[1];
+                    if(ypos>=2)
+                        gameinfo[num].grid[xpos].col[ypos-2]=gameinfo[num].play[0];
+                    end
+                end
+            else
+                gameinfo[num].gameover=1;
+            end
+
+        end
+        end
+
+    end
+
+/*
     if(timer[1]>dropnext)
         dropnext=timer[1]+dropinter;
-        if(y<12*16 && gameinfo[num].grid[xpos].col[ypos-1+(1*(ypos<1))]==0)
+        if(y<12*16 && gameinfo[num].grid[xpos].col[ypos+(1*(ypos<1))]==0)
             y+=8;
-            if(y%16==0)
-                ypos++;
-                frame;
-            end
 
             if(y==32)
                  getnext(num);
@@ -630,27 +751,12 @@ repeat
         end
 
     end
-
+*/
     frame;
 
 until (gameinfo[num].played==1);
 
-xpos=(x-8-(gameinfo[num].xpos))/16;
-
-ypos=(y-(y%16))/16;
-
 //debug;
-if(ypos>=0)
-    gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
-    if(ypos>=1)
-        gameinfo[num].grid[xpos].col[ypos-1]=gameinfo[num].play[1];
-        if(ypos>=2)
-            gameinfo[num].grid[xpos].col[ypos-2]=gameinfo[num].play[0];
-        end
-    end
-else
-    gameinfo[num].gameover=1;
-end
 
 
 //frame;
@@ -658,6 +764,10 @@ end
 frame(200);
 x=-1;
 frame(200);
+repeat
+frame;
+until (gameinfo[num].played==0)
+
 //frame(200);
 until(gameinfo[num].gameover==1);
 
