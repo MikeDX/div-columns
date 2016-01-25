@@ -683,12 +683,12 @@ gameinfo[num].played=0;
 
 repeat
 
-    if(key(_left) && xpos>0)
+    if(scan_code == _left && xpos>0)
        x-=16;
        xpos--;
 
     end
-    if(key(_right) && xpos<5)
+    if(scan_code == _right && xpos<5)
         x+=16;
         xpos++;
     end
@@ -712,7 +712,6 @@ repeat
 
         if(d==0)
         if(ypos==13 || gameinfo[num].grid[xpos].col[ypos]!=0)
-            gameinfo[num].played=1;
             y=y-8;
 
             xpos=(x-8-(gameinfo[num].xpos))/16;
@@ -730,7 +729,8 @@ repeat
             else
                 gameinfo[num].gameover=1;
             end
-
+            gameinfo[num].played=1;
+            frame;
         end
         end
 
@@ -806,11 +806,18 @@ region=num+1;
 graph=(gameinfo[num].play[idx]-1)*10+1;
 
 repeat
+//if(gameinfo[num].played==0)
 x=father.x;
 y=father.y-16+idx*16;
 
+
 frame;
-until (father.x==-1)
+until (gameinfo[num].played==1)
+
+//loop
+frame(200);
+//end
+
 
 
 
