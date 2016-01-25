@@ -2,7 +2,12 @@ program columns;
 
 global
 
+// define our game struct
+// this allows a columns game to be started anywhere on scren
+// any any number of grids
+
 struct gameinfo[3]
+
     struct grid[6]
          col[14];
 
@@ -10,7 +15,6 @@ struct gameinfo[3]
             jewelid;
             destroyed;
          end
-
     end
 
     gameover=0;
@@ -25,18 +29,20 @@ struct gameinfo[3]
     next[3];
     play[3];
     nextx;
-//    nexty;
     jewels;
     played=1;
     playing=0;
 
-
 END
+
+// set attract mode
 
 attract=1;
 
+
 begin
 
+// reset the timer
 timer[0]=0;
 
 set_mode(320240);
@@ -44,145 +50,120 @@ set_mode(320240);
 load_fpg("columns/columns.FPG");
 
 // colour bars
-
 put_screen(0,209);
+
 while(timer[0]<200);
 frame;
 end
 
+// setup the "next" position for each game
+// arcade
 gameinfo[0].nextx=120;
 gameinfo[1].nextx=184;
+
+// single player
 gameinfo[2].nextx=88;
 
 
+//main operating loop
 loop
 
-// title 1
-graph=206;
-x=160;
-y=50;
+    // columns title
+    graph=206;
+    x=160;
+    y=50;
 
-//mouse.graph=70;
+    // men intro with bag
+    put_screen(0,205);
 
-//frame(20000);
-put_screen(0,205);
-gems();
-
-//joystick();
-
-while(!key(_space) && timer[0]<1000)
-
-frame;
-
-end
-timer[0]=0;
-signal(type gems, s_kill_tree);
+    // bag of gems process
+    gems();
 
 
-graph=0;
+    // show this screen for 10 seconds
+    while(!key(_space) && timer[0]<1000)
 
-put_screen(0,203);
-game(16,8,0);
-game(208,8,1);
-//game(112,8,2);
+        frame;
 
-frame;
+    end
 
-while(attract==0 || (!key(_esc) && timer[0]<1000))
-frame;
-end
+    // reset timer
+    timer[0]=0;
 
-timer[0]=0;
-signal(type game, s_kill_tree);
-delete_text(all_text);
+    // kill the gems spawning from the bag
+    signal(type gems, s_kill_tree);
 
+    frame;
 
-put_screen(0,204);
+    // hide "columns" title
+    graph=0;
 
-graph=206;
-x=160;
-y=50;
+    // show the arcade (two player) games grid
+    put_screen(0,203);
+    game(16,8,0);
+    game(208,8,1);
 
-//joystick();
-frame;
+    frame;
 
-while(!key(_space) && timer[0]<1000)
+    // show this grid for 10 seconds, or until escape press
+    // or continuously if not in attract mode
+    while(attract==0 || (!key(_esc) && timer[0]<1000))
+        frame;
+    end
 
-frame;
+    // reset time
+    timer[0]=0;
 
-end
-timer[0]=0;
+    //kill the game(s) and all subprocesses
+    signal(type game, s_kill_tree);
+    delete_text(all_text);
+    frame;
 
-graph=0;
+    // show the female title
 
-put_screen(0,217);
-game(112,8,2);
-frame;
+    put_screen(0,204);
 
-while(attract==0 || (!key(_esc) && timer[0]<1000));
-frame;
-end
-signal(type game, s_kill_tree);
-delete_text(all_text);
+    // show the coluns logo
+    graph=206;
 
+    frame;
 
-timer[0]=0;
-
-end
-
-
-
-end
-
-process joystick()
-
-begin
-
-x=160;
-y=200;
-button();
-
-loop
-graph=210;
-if(key(_left))
-graph=211;
-end
-
-if(key(_right))
-graph=212;
-end
-
-if(key(_down))
-graph=213;
-end
-
-frame;
-end
+    // show this tite for 10 seconds or until space pressed
+    while(!key(_space) && timer[0]<1000)
+        frame;
+    end
 
 
-end
+    // reset time
+    timer[0]=0;
 
-process button()
+    // hide logo
+    graph=0;
 
-begin
+    // show the single player grid
+    put_screen(0,217);
+    // spawn the single player process
+    game(112,8,2);
+    frame;
 
-x=200;
-y=180;
+    // loop whilst game playing, or for 10 seconds, or
+    // until escape is pressed
+    while(attract==0 || (!key(_esc) && timer[0]<1000));
+        frame;
+    end
+
+    // reset time
+    timer[0]=0;
+
+    // kill the game
+    signal(type game, s_kill_tree);
+    // delete any texts on screen
+    delete_text(all_text);
 
 
-loop
+end  // end main loop
 
-graph=214;
 
-if(key(_space))
-
-graph=215;
-
-end
-
-frame;
-
-end
 
 end
 
@@ -803,3 +784,62 @@ end
 
 
 end
+
+
+
+
+
+process joystick()
+
+begin
+
+x=160;
+y=200;
+button();
+
+loop
+    graph=210;
+    if(key(_left))
+        graph=211;
+    end
+
+    if(key(_right))
+        graph=212;
+    end
+
+    if(key(_down))
+        graph=213;
+    end
+
+    frame;
+end
+
+
+end
+
+process button()
+
+begin
+
+x=200;
+y=180;
+
+
+loop
+
+    graph=214;
+
+    if(key(_space))
+
+        graph=215;
+
+    end
+
+    frame;
+
+end
+
+end
+
+
+
