@@ -337,7 +337,27 @@ region = num+1;
 x=xpos*16+gameinfo[num].xpos+8;
 y=ypos*16+gameinfo[num].ypos+8;
 
-write_int(0,x,y,4,&gameinfo[num].grid[xpos].col[ypos]);
+//write_int(0,x,y,4,&gameinfo[num].grid[xpos].col[ypos]);
+
+loop
+//    if(true) //gameinfo[num].played==1)
+// check if jewel has changed
+    if(abs(gameinfo[num].grid[xpos].col[ypos])!=jewelid)
+        jewelid = gameinfo[num].grid[xpos].col[ypos];
+        graph=0;
+        if(jewelid>0)
+            graph = 1+(jewelid-1)*10;
+        //    frame;//(50);
+//            frame;//(200);//(50);
+        end
+        //frame;
+
+    end
+    frame;
+end
+
+
+//jewel2(num,xpos,ypos);
 
 end
 
@@ -352,20 +372,30 @@ shimmer;
 
 begin
 
-loop
-    if(true) //gameinfo[num].played==1)
-// check if jewel has changed
-    if(gameinfo[num].grid[xpos].col[ypos]!=jewelid)
-        jewelid = gameinfo[num].grid[xpos].col[ypos];
-        graph=0;
-        if(jewelid>0)
-            graph = 1+(jewelid-1)*10;
-        //    frame;//(50);
-            frame;//(200);//(50);
-        end
-        //frame;
+region = num+1;
+x=xpos*16+gameinfo[num].xpos+8;
+y=ypos*16+gameinfo[num].ypos+8;
 
-    end
+
+
+end
+
+process jewel3(num,xpos,ypos);
+
+private
+
+jewelid;
+px;
+py;
+
+shimmer;
+
+
+begin
+
+
+loop
+if(true)
   /*
     if(jewelid>-1)
 // check for drop
@@ -410,10 +440,10 @@ loop
         end
 
         if(shimmer>0)
-            graph=1+jewelid*10+(9-shimmer);
+            graph=1+(jewelid-1)*10+(9-shimmer);
             shimmer--;
             if(shimmer==0)
-                graph=1+jewelid*10;
+                graph=1+(jewelid-1)*10;
             end
 
         end
@@ -517,7 +547,7 @@ loop
 
 if(gameinfo[num].next[idx]!=jewelid)
 jewelid=gameinfo[num].next[idx];
-graph=1+jewelid*10;
+graph=1+(jewelid-1)*10;
 end
 
 frame;
@@ -625,7 +655,7 @@ process pjewel(num,idx)
 
 begin
 region=num+1;
-graph=gameinfo[num].play[idx]*10+1;
+graph=(gameinfo[num].play[idx]-1)*10+1;
 
 repeat
 x=father.x;
