@@ -54,8 +54,22 @@ load_fpg("columns/columns.FPG");
 // colour bars
 put_screen(0,209);
 
+
 while(timer[0]<200);
-frame;
+    frame;
+end
+clear_screen();
+graph=216;
+x=160;
+y=120;
+
+while(timer[0]<500)
+    frame;
+end
+
+while(size>0)
+    size-=4;
+    frame;
 end
 
 // setup the "next" position for each game
@@ -69,8 +83,9 @@ gameinfo[2].nextx=88;
 
 //main operating loop
 loop
+    size=100;
 
-
+    timer[0]=0;
     // columns title
     graph=206;
     x=160;
@@ -344,14 +359,13 @@ end
 
 process wipes(num,x,y)
 begin
-graph=60;
-region=num+1;
-x=gameinfo[num].xpos+8+x*16;
-y=gameinfo[num].ypos+8+y*16;
-//frame;
-while (graph<67);
-frame;
-graph++;
+    graph=60;
+    region=num+1;
+    x=gameinfo[num].xpos+8+x*16;
+    y=gameinfo[num].ypos+8+y*16;
+    while (graph<67);
+        frame;
+    graph++;
 end
 
 end
@@ -364,10 +378,9 @@ function getnext(num)
 begin
 
 while(x<3)
-gameinfo[num].curr[x]=gameinfo[num].next[x];
-gameinfo[num].next[x]=rand(1,gameinfo[num].jewels);
-
-x++;
+    gameinfo[num].curr[x]=gameinfo[num].next[x];
+    gameinfo[num].next[x]=rand(1,gameinfo[num].jewels);
+    x++;
 end
 
 return;
