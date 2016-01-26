@@ -102,12 +102,14 @@ loop
 
 
 
-    if(key(_space))
+    //if(key(_space))
        attract=0;
-    end
+    //end
 
     // show the arcade (two player) games grid
     put_screen(0,203);
+    gameinfo[0].gameover=0;
+    gameinfo[1].gameover=1;
     game(16,8,0);
     game(208,8,1);
 
@@ -115,9 +117,11 @@ loop
 
     // show this grid for 10 seconds, or until escape press
     // or continuously if not in attract mode
-    while(attract==0 || (!key(_esc) && timer[0]<1000))
+    while(attract==0) // || (!key(_esc) && timer[0]<1000))
         frame;
     end
+
+    debug;
 
     // reset time
     timer[0]=0;
@@ -190,6 +194,8 @@ gy=0;
 begin
     // background grid
     //graph=301;
+    //gameinfo[num].gameover=0;
+
     x=xpos+3*16;
     y=7*16;
 
@@ -202,14 +208,14 @@ begin
     // setup a region for this grid (makes the sprite hiding easy)
     define_region(num+1,xpos,ypos,96,208);
 
+    region=num+1;
+
+    gameinfo[num].next[0]=0;
+    gameinfo[num].next[1]=0;
+    gameinfo[num].next[2]=0;
+
     // display the "next" jewels
     shownext(num);
-
-    // populate the "next" grid
-    getnext(num);
-    //frame;
-
-    region=num+1;
 
     /// reset the grid to zero
     // and spawn jewels
@@ -299,9 +305,54 @@ begin
         frame;
         gameinfo[num].played=0;
 
+    if(gameinfo[num].gameover==1)
+        //debug;
+       // gameinfo[num].smash=1;
+        for(gy=12;gy>=0;gy--)
+            for(gx=0;gx<6;gx++)
+                gameinfo[num].grid[gx].col[gy]=-0;
+            end
+            wipe(num,gy);
+            frame(200);
+        end
+        frame;
+        gameinfo[num].gameover=0;
+   end
+
+
     end
 
+
 end
+
+process wipe(num,y)
+
+begin
+
+
+for(x=0;x<6;x++)
+wipes(num,x,y);
+end
+
+end
+
+
+process wipes(num,x,y)
+begin
+graph=60;
+region=num+1;
+x=gameinfo[num].xpos+8+x*16;
+y=gameinfo[num].ypos+8+y*16;
+frame;
+while (graph<67);
+frame;
+graph++;
+end
+
+end
+
+
+
 
 function getnext(num)
 
@@ -652,6 +703,7 @@ ypos=1;
 d=0;
 gameover=0;
 tp=0;
+donenext=0;
 begin
 gameinfo[0].played=0;
 region=num+1;
@@ -665,24 +717,45 @@ pjewel(num,1);
 pjewel(num,2);
 
 
+loop
+    while(gameinfo[num].gameover==1)
+        graph=216;
+        x=gameinfo[num].xpos+48;
+        y=100;
+     //   if(key(_1))
+     //       gameinfo[num].gameover=0;
+     //   end
 
+        frame;
+    end
 
-// show sprites
-repeat
+    // populate the "next" grid
+    getnext(num);
 
+    donenext=0;
+// copy the next into the current
+// we need 3 copies.
+// current
+// next
+// in play
+//
+// since the next changes as the current comes into view
 for(x=0;x<3;x++)
     gameinfo[num].play[x]=gameinfo[num].next[x];
 end
+
+// out half/tile position
 d=0;
+// exact grid positions
 xpos=3;
 ypos=-1;
 
+// player box outline
 graph=300;
 y=-24;
-
-
 x=gameinfo[num].xpos+8+16*3;
 
+// reset the gameinfo to say the piece is "in play"
 gameinfo[num].played=0;
 
 // main loop, repeated until gameover
@@ -721,6 +794,7 @@ repeat
         y+=8;
         if(y==32)
             getnext(num);
+            donenext=1;
         end
 
         if(d==0)
@@ -746,6 +820,11 @@ repeat
             else
                 gameinfo[num].gameover=1;
             end
+
+            if(!donenext)
+                getnext(num);
+            end
+
             gameinfo[num].played=1;
         end
 
@@ -764,9 +843,14 @@ repeat
     until (gameinfo[num].played==0)
 
 
-until(gameinfo[num].gameover==1);
+end
+
+debug;
+//until(gameinfo[num].gameover==1);
 
 end
+
+
 
 process pjewel(num,idx)
 
@@ -775,22 +859,31 @@ begin
     priority=father.priority-1;
 
     region=num+1;
-    graph=(gameinfo[num].play[idx]-1)*10+1;
+    //graph=(gameinfo[num].play[idx]-1)*10+1;
 
     // repeat whilst not gameover
-    repeat
-
-        graph=(gameinfo[num].play[idx]-1)*10+1;
+    loop
+    //repeat
+        if(gameinfo[num].gameover==0)
+            graph=(gameinfo[num].play[idx]-1)*10+1;
 
         // get coords from player
-        x=father.x;
-        y=father.y-16+idx*16;
+            x=father.x;
+            y=father.y-16+idx*16;
+
+        else
+            graph=0;
+        end
 
         frame;
 
-    until (gameinfo[num].gameover==1)
+    end
+
+    //until (gameinfo[num].gameover==1)
 
 end
+
+
 
 // gems out of the bag on title
 process titlegems()
@@ -798,19 +891,17 @@ process titlegems()
 begin
 
 //graph=219;
-for(y=-1;y<2;y++)
-gem1(219,-2,y);
-gem1(220,-1,y);
-gem1(221,0,y);
-gem1(220,1,y);
-gem1(219,2,y);
-end
+    for(y=-1;y<2;y++)
+        gem1(219,-2,y);
+        gem1(220,-1,y);
+        gem1(221,0,y);
+        gem1(220,1,y);
+        gem1(219,2,y);
+    end
 
-loop
-
-
-frame;
-end
+    loop
+        frame;
+    end
 
 end
 
@@ -822,58 +913,63 @@ ydir;
 count;
 begin
 
+// repeat forever
 loop
-count=0;
+    count=0;
 
-x=160;
-y=116;
-if(abs(xdir)==1);
-y+=2;
+    x=160;
+    y=116;
+
+    if(abs(xdir)==1);
+        y+=2;
+    end
+
+    if(abs(xdir)==2);
+        y+=7;
+    end
+
+    ydir=-6;
+    size=100;
+
+    while(count<40)//y<200+6*(abs(xdir)))//!out_region(id,0));
+        graph++;
+        if(graph==222)
+            graph=219;
+        end
+
+        count++;
+
+        if(ydir<0)
+            x=x+xdir;
+        end
+
+        y+=ydir;
+
+        if(ydir<5)
+            ydir++;
+        end
+
+        if(y>120 && size>0)
+            size-=8;
+        end
+
+        if(count==15)
+            y+=4*(abs(yoff));
+            x+=4*(yoff);
+        end
+
+        frame;
+
+    end
+
 end
-if(abs(xdir)==2);
-y+=7;
-end
-
-ydir=-6;//-(2-abs(xdir));
-size=100;
-while(count<40)//y<200+6*(abs(xdir)))//!out_region(id,0));
-graph++;
-if(graph==222)
-graph=219;
-end
-
-count++;
-
-if(ydir<0)
-x=x+xdir;
-else
-//size;
-end
-
-y+=ydir;
-if(ydir<5)
-ydir++;
-end
-if(y>120 && size>0)
-size-=8;
-end
-if(count==15)
-y+=4*(abs(yoff));
-x+=4*(yoff);
-end
-
-frame;
-
-end
-
-end
 
 
 end
 
 
 
-
+// on screen joystick and buttons
 
 process joystick()
 
