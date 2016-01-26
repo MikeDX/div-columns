@@ -9,7 +9,7 @@ global
 struct gameinfo[3]
 
     struct grid[6]
-         col[14];
+         col[16];
 
          struct data[14];
             jewelid;
@@ -40,7 +40,7 @@ END
 // set attract mode
 
 attract=1;
-players=1;
+players=2;
 
 begin
 
@@ -58,6 +58,7 @@ put_screen(0,209);
 while(!key(_space) && timer[0]<500);
     frame;
 end
+
 clear_screen();
 timer[0]=0;
 
@@ -65,15 +66,17 @@ timer[0]=0;
 graph=216;
 x=160;
 y=120;
+size=200;
 
-while(timer[0]<500)
+while(timer[0]<200)
+//angle+=5000;
     frame;
 end
 
 // shrink to zero
 
 while(size>0)
-    size-=4;
+    size-=10;
     frame;
 end
 
@@ -101,7 +104,6 @@ loop
 
     // bag of gems process
     titlegems();
-
 
     // show this screen for 10 seconds
     while(!key(_space))// && timer[0]<1000)
@@ -254,7 +256,7 @@ begin
     /// reset the grid to zero
     // and spawn jewels
     for(gx=0;gx<6;gx++)
-        for(gy=12;gy>=0;gy--)
+        for(gy=15;gy>=0;gy--)
             gameinfo[num].grid[gx].col[gy]=0;
             jewel(gx,gy,num);
         end
@@ -303,7 +305,7 @@ begin
             repeat  // while falls
                 falls=0;
                 gaps=0;
-                for(gy=12;gy>=0;gy--)
+                for(gy=14;gy>=0;gy--)
 
                     for(gx=0;gx<6;gx++)
 
@@ -347,31 +349,69 @@ begin
     if(gameinfo[num].gameover==1)
         //debug;
        // gameinfo[num].smash=1;
-        for(gy=12;gy>=0;gy--)
+       gameoversprite(num);
+
+        for(gy=15;gy>=0;gy--)
             for(gx=0;gx<6;gx++)
-                gameinfo[num].grid[gx].col[gy]=-0;
+                gameinfo[num].grid[gx].col[gy]=0;
             end
             wipe(num,gy,speed);
+
             frame(speed);
         end
         frame;
+        while(!key(_space))
+            frame;
+        end
+
         gameinfo[num].gameover=0;
    end
 
-
-    end
+end
 
 
 end
+
+process gameoversprite(num)
+begin
+
+graph=410;
+
+x=gameinfo[num].xpos+3*16;
+y=gameinfo[num].ypos+8+16*20;
+region=num+1;
+
+while(y>92)
+    y-=8;
+    graph++;
+    if(graph==414)
+        graph=410;
+    end
+    frame;
+end
+
+
+
+while(gameinfo[num].gameover==1)
+
+    graph++;
+    if(graph==414)
+        graph=410;
+    end
+    frame;
+
+end
+
+end
+
 
 process wipe(num,y,speed)
 
 begin
 
-
-for(x=0;x<6;x++)
-wipes(num,x,y,speed);
-end
+    for(x=0;x<6;x++)
+        wipes(num,x,y,speed);
+    end
 
 end
 
@@ -381,7 +421,7 @@ begin
     graph=60;
     region=num+1;
     x=gameinfo[num].xpos+8+x*16;
-    y=gameinfo[num].ypos+8+y*16;
+    y=gameinfo[num].ypos+8+(y-2)*16;
     while (graph<67);
         frame(speed);
     graph++;
@@ -393,6 +433,8 @@ end
 
 
 function getnext(num)
+
+
 
 begin
 
@@ -409,14 +451,42 @@ end
 
 process smash(xpos,ypos,num)
 
+private
+pos=0;
+flip=0;
+jeweli;
+jewelm;
+xg=0;
+xc=0;
+yc=0;
+xcc=0;
+ycc=0;
+matched=0;
+maidx;
+
+struct matcharray[4]
+    x;
+    y;
+END=-1,-1, 0,-1, 1,-1, -1,-1;
+
+
 begin
 graph=0;
 region=num+1;
 x=xpos*16+gameinfo[num].xpos+8;
-y=ypos*16+gameinfo[num].ypos+8;
+y=ypos*16+gameinfo[num].ypos+8-32;
 
 loop
 // if smashed
+//    flip++;
+
+//    if(flip==10)
+//        flip=0;
+//    end
+
+//pos=gameinfo[num];
+
+
 if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
     graph=1+10*(abs(gameinfo[num].grid[xpos].col[ypos])-1);
     gameinfo[num].grid[xpos].col[ypos]=0;
@@ -438,6 +508,55 @@ if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
         frame;
     until(gameinfo[num].smash==0);
 
+else
+
+    matched=0;
+    jeweli = gameinfo[num].grid[xpos].col[ypos];
+
+    for(xg=0;xg<3;xg++) // 3 jewels
+        jewelm = gameinfo[num].play[xg];
+        // check matches fast
+
+        if(jewelm==jeweli)
+            matched=1;
+        end
+    end
+
+        // check surrounds
+    if(matched==1)
+        matched=0;
+/*
+    for(maidx=0;maidx<4;maidx++)
+        xc=xpos+matcharray[maidx].x;
+        yc=ypos+matcharray[maidx].y;
+        xcc=1-xc;
+        ycc=1-yc;
+        if(xc>1)
+            if(yc>0)
+                if((gameinfo[num].hgrid[xc].col[yc]==jeweli || gameinfo[num].grid[xc].col[yc]==jeweli)
+                && gameinfo[num].grid[xc].col[yc+1]!=0)
+                    if(xpos+xcc<6)
+                        if(ypos+ycc>0)
+                            if(gameinfo[num].hgrid[xc].col[yc]==jeweli || gameinfo[num].grid[xc].col[yc]==jeweli)
+                                matched=1;
+                                break;
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+*/
+    if(matched==1)
+        if(timer[1]%100<50)
+            graph=10;
+        end
+    end
+
+//    else
+//        graph=0;
+end
 
 end
 
@@ -468,7 +587,7 @@ begin
 
 region = num+1;
 x=xpos*16+gameinfo[num].xpos+8;
-y=ypos*16+gameinfo[num].ypos+8;
+y=ypos*16+gameinfo[num].ypos+8-32;
 
 //write_int(0,x,y,4,&gameinfo[num].grid[xpos].col[ypos]);
 smash(xpos,ypos,num);
@@ -620,7 +739,7 @@ process player(num)
 private
 dropinter=100;
 dropnext=0;
-xpos=3;
+xpos=2;
 ypos=1;
 d=0;
 gameover=0;
@@ -640,9 +759,9 @@ getnext(num);
 
 loop
     while(gameinfo[num].gameover==1)
-        graph=216;
-        x=gameinfo[num].xpos+48;
-        y=100;
+        //graph=216;
+        //x=gameinfo[num].xpos+48;
+        //y=100;
      //   if(key(_1))
      //       gameinfo[num].gameover=0;
      //   end
@@ -668,13 +787,13 @@ loop
 // out half/tile position
 d=0;
 // exact grid positions
-xpos=3;
-ypos=-1;
+xpos=2;
+ypos=1;
 
 // player box outline
 graph=300;
 y=-24;
-x=gameinfo[num].xpos+8+16*3;
+x=gameinfo[num].xpos+8+16*xpos;
 
 // reset the gameinfo to say the piece is "in play"
 gameinfo[num].played=0;
@@ -728,14 +847,14 @@ repeat
         end
 
         if(d==0)
-        if(ypos==13 || gameinfo[num].grid[xpos].col[ypos]!=0)
+        if(ypos==15 || gameinfo[num].grid[xpos].col[ypos]!=0)
             y=y-8;
 
             xpos=(x-8-(gameinfo[num].xpos))/16;
-            ypos=(y-(y%16))/16;
+            ypos=(y-(y%16))/16+2;
 
             // populate play grid
-            if(ypos>=0)
+            if(ypos>1)
                 gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
                 if(ypos>=1)
                     gameinfo[num].grid[xpos].col[ypos-1]=gameinfo[num].play[1];
@@ -772,10 +891,8 @@ until (gameinfo[num].played==1);
 end
 
 debug;
-//until(gameinfo[num].gameover==1);
 
 end
-
 
 
 process pjewel(num,idx)
@@ -785,15 +902,13 @@ begin
     priority=father.priority-1;
 
     region=num+1;
-    //graph=(gameinfo[num].play[idx]-1)*10+1;
 
     // repeat whilst not gameover
     loop
-    //repeat
         if(gameinfo[num].gameover==0)
             graph=(gameinfo[num].play[idx]-1)*10+1;
 
-        // get coords from player
+            // get coords from player
             x=father.x;
             y=father.y-16+idx*16;
 
@@ -805,13 +920,14 @@ begin
 
     end
 
-    //until (gameinfo[num].gameover==1)
-
 end
 
 
 
+
+
 // gems out of the bag on title
+
 process titlegems()
 
 begin
@@ -895,6 +1011,8 @@ end
 
 
 
+
+
 // on screen joystick and buttons
 
 process joystick(num)
@@ -926,7 +1044,6 @@ loop
     frame;
 end
 
-
 end
 
 process button(num)
@@ -955,6 +1072,3 @@ loop
 end
 
 end
-
-
-
