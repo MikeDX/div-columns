@@ -52,12 +52,37 @@ end=_left,_right,_down,_space,_1,
 attract=1;
 players=2;
 timeout=0;
+
+sounds[8];
+
+
 begin
+
+//set_fps(50,2);
+
 
 // reset the timer
 timer[0]=0;
 
 set_mode(320240);
+
+
+// load sounds
+
+// 0 - smash
+// 1 - ????
+// 2 - select
+// 3 - drop
+// 4 - level up?
+// 5 - magic jewel?
+// 6 - swap
+// 7 - ????
+
+for(x=0;x<8;x++)
+    sounds[x]=load_wav("columns/fx"+itoa(x)+".wav",0);//(x==1));
+end
+
+
 
 load_fpg("columns/columns.FPG");
 
@@ -89,6 +114,7 @@ while(size>0)
     size-=10;
     frame;
 end
+//roll();
 
 // setup the "next" position for each game
 // arcade
@@ -117,9 +143,13 @@ loop
         titlegems();
     end
     // show this screen for 10 seconds
+    press_start();
+
     while(!key(_space)  && timer[0]<1000)
         frame;
     end
+
+    signal(type press_start, s_kill);
 
 
     // reset timer
@@ -161,17 +191,17 @@ loop
     end
 
     frame;
-    timeout=timer[0]+500;
+    timeout=timer[0]+1000;
     // show this grid for 10 seconds, or until escape press
     // or continuously if not in attract mode
     repeat
-        if(gameinfo[0].playing==1  ||
-           gameinfo[1].playing==1 ||
+        if(gameinfo[0].playing==1||
+           gameinfo[1].playing==1||
            gameinfo[2].playing==1)
 
-            timeout=timer[0]+500;
+            timeout=timer[0]+1000;
         end
-        frame;
+        frame(2400);
     until (timer[0]>timeout);
 
     fadeonoff();
@@ -195,6 +225,35 @@ end  // end main loop
 
 
 end
+
+process press_start()
+
+private flip=0;
+
+begin
+graph=414;
+
+x=160;
+y=180;
+loop
+
+    flip++;
+    flip=flip%10;
+
+    if(flip<5)
+        graph=0;
+    else
+        graph=414;
+    end
+
+    frame(300);
+
+end
+
+
+
+end
+
 
 function fadeonoff()
 begin
@@ -221,6 +280,8 @@ gy=0;
 speed=200;
 myplayer;
 flip=0;
+s=0;
+
 begin
     // background grid
     //graph=301;
@@ -298,6 +359,10 @@ begin
                 repeat
 
                     frame;//(200);
+                    if(gameinfo[num].smash==8)
+                        sound(sounds[0],256,256);
+                    end
+
                     if(gameinfo[num].smash<7)
                         frame;
                     end
@@ -356,12 +421,16 @@ begin
     if(gameinfo[num].gameover==1)
         //debug;
        // gameinfo[num].smash=1;
+       //s=sound(sounds[1],256,256);
+
        gameoversprite(num);
 
         for(gy=15;gy>=0;gy--)
             for(gx=0;gx<6;gx++)
                 gameinfo[num].grid[gx].col[gy]=0;
             end
+            sound(sounds[1],256,256);
+
             wipe(num,gy,speed);
 
             frame(speed);
@@ -371,6 +440,8 @@ begin
             gameinfo[num].next[gy]=0;
             gy++;
         end
+
+        //stop_sound(s);
 
         gy=100;
 
@@ -385,8 +456,7 @@ begin
 
         gameinfo[num].playing=0;
         gameinfo[num].gameover=0;
-
-   end
+           end
 
 end
 
@@ -823,6 +893,8 @@ gameinfo[num].played=0;
 repeat
 
     if(scan_code == keys[num].swap)
+        sound(sounds[6],256,256);
+
         tp=gameinfo[num].play[2];
         gameinfo[num].play[2]=gameinfo[num].play[1];
         gameinfo[num].play[1]=gameinfo[num].play[0];
@@ -886,6 +958,7 @@ repeat
             else
                 gameinfo[num].gameover=1;
             end
+            sound(sounds[3],256,256);
 
             if(donenext==0)
                 getnext(num);
@@ -1089,6 +1162,19 @@ loop
     end
 
     frame;
+
+end
+
+end
+
+process roll()
+
+begin
+
+loop
+
+roll_palette(0,255,1);
+frame;
 
 end
 
