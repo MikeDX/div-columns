@@ -200,7 +200,7 @@ begin
     y=7*16;
 
     // set number of random jewels in this game
-    gameinfo[num].jewels=3+rand(0,3);
+    gameinfo[num].jewels=4+rand(0,2);
     // set the game zpos ypos
     gameinfo[num].xpos=xpos;
     gameinfo[num].ypos=ypos;
@@ -251,10 +251,10 @@ begin
             frame;
 
             if(gameinfo[num].matched>0)
-                gameinfo[num].smash=7;
+                gameinfo[num].smash=28;
                 repeat
 
-                    frame(300);
+                    frame;//(200);
                     gameinfo[num].smash--;
                 until(gameinfo[num].smash==0);
                 frame;
@@ -313,7 +313,7 @@ begin
                 gameinfo[num].grid[gx].col[gy]=-0;
             end
             wipe(num,gy);
-            frame(200);
+            frame;//(200);
         end
         frame;
         gameinfo[num].gameover=0;
@@ -343,7 +343,7 @@ graph=60;
 region=num+1;
 x=gameinfo[num].xpos+8+x*16;
 y=gameinfo[num].ypos+8+y*16;
-frame;
+//frame;
 while (graph<67);
 frame;
 graph++;
@@ -381,12 +381,22 @@ y=ypos*16+gameinfo[num].ypos+8;
 loop
 // if smashed
 if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
+    graph=1+10*(abs(gameinfo[num].grid[xpos].col[ypos])-1);
+    gameinfo[num].grid[xpos].col[ypos]=0;
+
+    while(gameinfo[num].smash>8)
+        size=0;
+        if(gameinfo[num].smash%4<2)
+           size=100;
+        end
+        frame;
+    end
 
     gameinfo[num].grid[xpos].col[ypos]=0;
 
     repeat
     //if(gameinfo[num].grid[xpos].col[ypos]<0)
-        graph=66-gameinfo[num].smash;
+        graph=67-gameinfo[num].smash;
    // end
         frame;
     until(gameinfo[num].smash==0);
@@ -731,6 +741,7 @@ loop
     end
 
     // populate the "next" grid
+
     for(x=0;x<3;x++)
         gameinfo[num].play[x]=gameinfo[num].next[x];
     end
@@ -762,10 +773,15 @@ gameinfo[num].played=0;
 repeat
 
     if(scan_code == _space)
-        tp=gameinfo[num].play[0];
-        gameinfo[num].play[0]=gameinfo[num].play[1];
-        gameinfo[num].play[1]=gameinfo[num].play[2];
-        gameinfo[num].play[2]=tp;
+        tp=gameinfo[num].play[2];
+        gameinfo[num].play[2]=gameinfo[num].play[1];
+        gameinfo[num].play[1]=gameinfo[num].play[0];
+        gameinfo[num].play[0]=tp;
+        if(donenext==0)
+            for(tp=0;tp<3;tp++)
+                gameinfo[num].next[tp]=gameinfo[num].play[tp];
+            end
+        end
     end
 
     if(scan_code == _left && xpos>0)
