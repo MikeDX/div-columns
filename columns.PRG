@@ -255,11 +255,16 @@ begin
                 repeat
 
                     frame;//(200);
+                    if(gameinfo[num].smash<7)
+                        frame;
+                    end
+
                     gameinfo[num].smash--;
                 until(gameinfo[num].smash==0);
                 frame;
             end
 
+            gameinfo[num].checkmatch=0;
 
             repeat  // while falls
                 falls=0;
@@ -281,9 +286,9 @@ begin
                         end
                     end
                 end
-
+                frame;
             until (falls==0)
-
+            gameinfo[num].checkmatch=1;
             gameinfo[num].matched=0;
 
             frame;
@@ -423,7 +428,9 @@ px=0;
 py=0;
 
 shimmer=0;
+above=0;
 //smashing=0;
+counter=0;
 
 begin
 
@@ -437,17 +444,46 @@ loop
 //    if(true) //gameinfo[num].played==1)
 // check if jewel has changed
     if(abs(gameinfo[num].grid[xpos].col[ypos])!=jewelid)
+        counter=5;
         jewelid = abs(gameinfo[num].grid[xpos].col[ypos]);
         graph=0;
         if(jewelid>0)
             graph = 1+(jewelid-1)*10;
-        //    frame;//(50);
-//            frame;//(200);//(50);
         end
-        //frame;
 
     end
-//    frame;
+    if(counter>0)
+        counter--;
+    end
+
+    if(jewelid>0 && counter==0)
+        if(shimmer==0)
+            if(above==0)
+                if(ypos>0)
+                    if(gameinfo[num].grid[xpos].col[ypos-1]!=0)
+                    //if(rand(0,1000)>990)
+                        shimmer=7;
+                    end
+                end
+            end
+        end
+
+        if(shimmer>0)
+            graph=1+(jewelid-1)*10+(9-shimmer);
+            shimmer--;
+            if(shimmer==0)
+                graph=1+(jewelid-1)*10;
+            end
+
+        end
+
+    end
+
+    if(ypos>0)
+        above=abs(gameinfo[num].grid[xpos].col[ypos-1]);
+    end
+
+
     if(gameinfo[num].checkmatch==1 && jewelid>0)
 
         if(ypos>0)
