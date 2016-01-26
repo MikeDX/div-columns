@@ -537,165 +537,9 @@ loop
 
 end
 
-
-//jewel2(num,xpos,ypos);
-
-end
-
-process jewel2(num,xpos,ypos)
-
-private
-jewelid;
-px;
-py;
-
-shimmer;
-
-begin
-
-region = num+1;
-x=xpos*16+gameinfo[num].xpos+8;
-y=ypos*16+gameinfo[num].ypos+8;
-
-
-
-end
-
-process jewel3(num,xpos,ypos);
-
-private
-
-jewelid;
-px;
-py;
-
-shimmer;
-
-
-begin
-
-
-loop
-if(true)
-  /*
-    if(jewelid>-1)
-// check for drop
-
-        if(ypos<12)
-//debug;
-            if(gameinfo[num].grid[xpos].col[ypos+1]==-1)
-                gameinfo[num].grid[xpos].col[ypos+1]=jewelid;
-            //jewelid=-1;
-                gameinfo[num].grid[xpos].col[ypos]=-1;
-                jewelid=-1;
-                graph=0;
-                //frame;//(50);//(50);
-
-            end
-        end
-    /*
-    if(jewelid>-1)
-        if(shimmer==0)
-            if(rand(0,60)>50)
-                //shimmer=7;
-            end
-        end
-
-        if(shimmer>0)
-            graph=1+jewelid*10+(9-shimmer);
-            shimmer--;
-            if(shimmer==0)
-                graph=1+jewelid*10;
-            end
-
-        end
-      */
-    end
-    */
-
-    if(jewelid>0)
-        if(shimmer==0)
-            if(rand(0,500)>490)
-                shimmer=7;
-            end
-        end
-
-        if(shimmer>0)
-            graph=1+(jewelid-1)*10+(9-shimmer);
-            shimmer--;
-            if(shimmer==0)
-                graph=1+(jewelid-1)*10;
-            end
-
-        end
-    end
-
-    if(jewelid>0)
-    //if(1)
-        if(ypos>0)
-            if(abs(gameinfo[num].grid[xpos].col[ypos-1])==jewelid &&
-               abs(gameinfo[num].grid[xpos].col[ypos+1])==jewelid)
-
-                gameinfo[num].grid[xpos].col[ypos-1]=-jewelid;
-                //gameinfo[num].grid[xpos].col[ypos]=0;
-                gameinfo[num].grid[xpos].col[ypos-1]=-jewelid;
-                gameinfo[num].matched=1;
-
-                //jewelid=-1;
-            end
-        end
-
-        if(xpos>0 && xpos<5 )
-            if(abs(gameinfo[num].grid[xpos-1].col[ypos])==jewelid &&
-               abs(gameinfo[num].grid[xpos+1].col[ypos])==jewelid)
-
-                gameinfo[num].grid[xpos-1].col[ypos]=-jewelid;
-                gameinfo[num].grid[xpos+1].col[ypos]=-jewelid;
-                //gameinfo[num].grid[xpos].col[ypos]=-1;
-                gameinfo[num].matched=1;
-//jewelid=-1;
-            end
-
-            if(ypos>0)
-                if(abs(gameinfo[num].grid[xpos-1].col[ypos-1])==jewelid &&
-                   abs(gameinfo[num].grid[xpos+1].col[ypos+1])==jewelid)
-
-                    gameinfo[num].grid[xpos-1].col[ypos-1]=-jewelid;
-                    gameinfo[num].grid[xpos+1].col[ypos+1]=-jewelid;
-                   // gameinfo[num].grid[xpos].col[ypos]=-1;
-                    gameinfo[num].matched=1;
-//jewelid=-1;
-                end
-
-
-                if(abs(gameinfo[num].grid[xpos-1].col[ypos+1])==jewelid &&
-                   abs(gameinfo[num].grid[xpos+1].col[ypos-1])==jewelid)
-
-                    gameinfo[num].grid[xpos-1].col[ypos+1]=-jewelid;
-                    gameinfo[num].grid[xpos+1].col[ypos-1]=-jewelid;
-                //    gameinfo[num].grid[xpos].col[ypos]=-1;
-                    gameinfo[num].matched=1;
-//jewelid=-1;
-                end
-            end
-
-        end
-
-    //    end
-
-
-    end
-end
-
-    frame;//(50);
-    //(50);//(50);//(50);
-
 end
 
 
-
-//graph=
-end
 
 
 process shownext(num)
@@ -722,16 +566,16 @@ begin
 x=gameinfo[num].nextx+8;
 y=16+idx*16;
 
-graph=1;
-//break;
+graph=0;
+
 loop
 
-if(gameinfo[num].next[idx]!=jewelid)
-jewelid=gameinfo[num].next[idx];
-graph=1+(jewelid-1)*10;
-end
+    if(gameinfo[num].next[idx]!=jewelid)
+        jewelid=gameinfo[num].next[idx];
+        graph=1+(jewelid-1)*10;
+    end
 
-frame;
+    frame;
 
 end
 
