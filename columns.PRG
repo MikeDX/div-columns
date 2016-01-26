@@ -55,10 +55,11 @@ load_fpg("columns/columns.FPG");
 put_screen(0,209);
 
 
-while(timer[0]<200);
+while(!key(_space) && timer[0]<500);
     frame;
 end
 clear_screen();
+timer[0]=0;
 
 // show the sega logo
 graph=216;
@@ -132,6 +133,7 @@ loop
             put_screen(0,217);
             // spawn the single player process
             game(112,8,2);
+            joystick(2);
         end
 
         case 2:
@@ -895,13 +897,17 @@ end
 
 // on screen joystick and buttons
 
-process joystick()
+process joystick(num)
 
 begin
 
 x=160;
 y=200;
-button();
+button(2);
+
+if(num==2)
+x+=80;
+end
 
 loop
     graph=210;
@@ -923,13 +929,16 @@ end
 
 end
 
-process button()
+process button(num)
 
 begin
 
-x=200;
-y=180;
+x=220;
+y=190;
 
+if(num==2)
+x+=80;
+end
 
 loop
 
