@@ -40,7 +40,7 @@ END
 // set attract mode
 
 attract=1;
-
+players=1;
 
 begin
 
@@ -59,6 +59,8 @@ while(timer[0]<200);
     frame;
 end
 clear_screen();
+
+// show the sega logo
 graph=216;
 x=160;
 y=120;
@@ -66,6 +68,8 @@ y=120;
 while(timer[0]<500)
     frame;
 end
+
+// shrink to zero
 
 while(size>0)
     size-=4;
@@ -122,11 +126,23 @@ loop
     //end
 
     // show the arcade (two player) games grid
-    put_screen(0,203);
-    gameinfo[0].gameover=0;
-    gameinfo[1].gameover=1;
-    game(16,8,0);
-    game(208,8,1);
+    switch(players)
+        case 1:
+            // show the single player grid
+            put_screen(0,217);
+            // spawn the single player process
+            game(112,8,2);
+        end
+
+        case 2:
+            put_screen(0,203);
+            gameinfo[0].gameover=0;
+            gameinfo[1].gameover=1;
+            game(16,8,0);
+        game(208,8,1);
+        end
+
+    end
 
     frame;
 
@@ -166,11 +182,11 @@ loop
 
     // hide logo
     graph=0;
-
     // show the single player grid
     put_screen(0,217);
     // spawn the single player process
     game(112,8,2);
+
     frame;
 
     // loop whilst game playing, or for 10 seconds, or
@@ -205,6 +221,7 @@ falls=0;
 gaps=0;
 gx=0;
 gy=0;
+speed=200;
 
 begin
     // background grid
@@ -332,8 +349,8 @@ begin
             for(gx=0;gx<6;gx++)
                 gameinfo[num].grid[gx].col[gy]=-0;
             end
-            wipe(num,gy);
-            frame;//(200);
+            wipe(num,gy,speed);
+            frame(speed);
         end
         frame;
         gameinfo[num].gameover=0;
@@ -345,26 +362,26 @@ begin
 
 end
 
-process wipe(num,y)
+process wipe(num,y,speed)
 
 begin
 
 
 for(x=0;x<6;x++)
-wipes(num,x,y);
+wipes(num,x,y,speed);
 end
 
 end
 
 
-process wipes(num,x,y)
+process wipes(num,x,y,speed)
 begin
     graph=60;
     region=num+1;
     x=gameinfo[num].xpos+8+x*16;
     y=gameinfo[num].ypos+8+y*16;
     while (graph<67);
-        frame;
+        frame(speed);
     graph++;
 end
 
@@ -611,8 +628,6 @@ begin
 gameinfo[0].played=0;
 region=num+1;
 
-//write_int(0,gameinfo[num].xpos,gameinfo[num].ypos,4,&y);
-//write_int(0,gameinfo[num].xpos,gameinfo[num].ypos+8,4,&ypos);
 //show player jewels
 
 pjewel(num,0);
