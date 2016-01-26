@@ -716,6 +716,7 @@ pjewel(num,0);
 pjewel(num,1);
 pjewel(num,2);
 
+getnext(num);
 
 loop
     while(gameinfo[num].gameover==1)
@@ -730,7 +731,9 @@ loop
     end
 
     // populate the "next" grid
-    getnext(num);
+    for(x=0;x<3;x++)
+        gameinfo[num].play[x]=gameinfo[num].next[x];
+    end
 
     donenext=0;
 // copy the next into the current
@@ -740,9 +743,6 @@ loop
 // in play
 //
 // since the next changes as the current comes into view
-for(x=0;x<3;x++)
-    gameinfo[num].play[x]=gameinfo[num].next[x];
-end
 
 // out half/tile position
 d=0;
@@ -792,7 +792,7 @@ repeat
         // check if block below is free
         d=1-d;
         y+=8;
-        if(y==32)
+        if(y==32 && donenext==0)
             getnext(num);
             donenext=1;
         end
@@ -821,7 +821,7 @@ repeat
                 gameinfo[num].gameover=1;
             end
 
-            if(!donenext)
+            if(donenext==0)
                 getnext(num);
             end
 
@@ -833,7 +833,7 @@ repeat
 
     frame;
 
-    until (gameinfo[num].played==1);
+until (gameinfo[num].played==1);
 
     // hide the player jewels and wait until main loop
     // has done its checks to resume play
