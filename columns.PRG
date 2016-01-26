@@ -37,11 +37,21 @@ struct gameinfo[3]
 
 END
 
+
+struct keys[3]
+    left;
+    right;
+    down;
+    swap;
+    start;
+end=_left,_right,_down,_space,_1,
+    _a,_d,_s,_w,_2,
+    _left,_right,_down,_space,_1;
 // set attract mode
 
 attract=1;
 players=2;
-
+timeout=0;
 begin
 
 // reset the timer
@@ -100,13 +110,14 @@ loop
     y=50;
 
     // men intro with bag
-    put_screen(0,205);
+    put_screen(0,205-(players==1));
 
     // bag of gems process
-    titlegems();
-
+    if(players==2)
+        titlegems();
+    end
     // show this screen for 10 seconds
-    while(!key(_space))// && timer[0]<1000)
+    while(!key(_space)  && timer[0]<1000)
         frame;
     end
 
@@ -125,8 +136,9 @@ loop
 
 
     //if(key(_space))
-       attract=0;
+    //   attract=0;
     //end
+    fadeonoff();
 
     // show the arcade (two player) games grid
     switch(players)
@@ -141,7 +153,7 @@ loop
         case 2:
             put_screen(0,203);
             gameinfo[0].gameover=0;
-            gameinfo[1].gameover=1;
+            gameinfo[1].gameover=0;
             game(16,8,0);
         game(208,8,1);
         end
@@ -149,68 +161,49 @@ loop
     end
 
     frame;
-
+    timeout=timer[0]+500;
     // show this grid for 10 seconds, or until escape press
     // or continuously if not in attract mode
-    while(attract==0) // || (!key(_esc) && timer[0]<1000))
-        frame;
-    end
+    repeat
+        if(gameinfo[0].playing==1  ||
+           gameinfo[1].playing==1 ||
+           gameinfo[2].playing==1)
 
-    debug;
+            timeout=timer[0]+500;
+        end
+        frame;
+    until (timer[0]>timeout);
+
+    fadeonoff();
 
     // reset time
     timer[0]=0;
 
     //kill the game(s) and all subprocesses
     signal(type game, s_kill_tree);
+    signal(type joystick, s_kill_tree);
+
     delete_text(all_text);
-    frame;
-
-    // show the female title
-
-    put_screen(0,204);
-
-    // show the coluns logo
-    graph=206;
 
     frame;
 
-    // show this tite for 10 seconds or until space pressed
-    while(!key(_space))// && timer[0]<1000)
-        frame;
-    end
-
-
-    // reset time
-    timer[0]=0;
-
-    // hide logo
-    graph=0;
-    // show the single player grid
-    put_screen(0,217);
-    // spawn the single player process
-    game(112,8,2);
-
-    frame;
-
-    // loop whilst game playing, or for 10 seconds, or
-    // until escape is pressed
-    while(attract==0 || (!key(_esc) && timer[0]<1000));
-        frame;
-    end
-
-    // reset time
-    timer[0]=0;
-
-    // kill the game
-    signal(type game, s_kill_tree);
-    // delete any texts on screen
-    delete_text(all_text);
+    players=1-players+2;
 
 
 end  // end main loop
 
 
+
+end
+
+function fadeonoff()
+begin
+    fade_off();
+    while(fading)
+        frame;
+    end
+
+    fade_on();
 
 end
 
@@ -226,15 +219,16 @@ gaps=0;
 gx=0;
 gy=0;
 speed=200;
-
+myplayer;
+flip=0;
 begin
     // background grid
     //graph=301;
     //gameinfo[num].gameover=0;
 
     x=xpos+3*16;
-    y=7*16;
-
+    y=7*16+8;
+    //flip=num*16;
     // set number of random jewels in this game
     gameinfo[num].jewels=4+rand(0,2);
     // set the game zpos ypos
@@ -265,9 +259,22 @@ begin
 
     loop
 
-        if(!gameinfo[num].playing)
-            player(num);
-            gameinfo[num].playing=1;
+        while(!gameinfo[num].playing)
+
+            flip++;
+            flip=flip%32;
+            if(flip<16)
+                graph=0;
+            else
+                graph=401+(num%2);
+            end
+
+            if(key(keys[num].start))
+                myplayer=player(num);
+                gameinfo[num].playing=1;
+            end
+            frame;
+            graph=0;
         end
 
         // mini loop until piece have been placed
@@ -359,12 +366,26 @@ begin
 
             frame(speed);
         end
-        frame;
-        while(!key(_space))
+        gy=0;
+        while(gy<3)
+            gameinfo[num].next[gy]=0;
+            gy++;
+        end
+
+        gy=100;
+
+        while(gy>0)
+            gy--;
             frame;
         end
 
+        signal(myplayer, s_kill_tree);
+
+        frame;
+
+        gameinfo[num].playing=0;
         gameinfo[num].gameover=0;
+
    end
 
 end
@@ -801,7 +822,7 @@ gameinfo[num].played=0;
 // main loop, repeated until gameover
 repeat
 
-    if(scan_code == _space)
+    if(scan_code == keys[num].swap)
         tp=gameinfo[num].play[2];
         gameinfo[num].play[2]=gameinfo[num].play[1];
         gameinfo[num].play[1]=gameinfo[num].play[0];
@@ -813,7 +834,7 @@ repeat
         end
     end
 
-    if(scan_code == _left && xpos>0)
+    if(scan_code == keys[num].left && xpos>0)
        if(gameinfo[num].grid[xpos-1].col[ypos+14*(ypos==-1)]==0)
        //gameinfo[num].play[2];
 
@@ -823,7 +844,7 @@ repeat
 
 
     end
-    if(scan_code == _right && xpos<5)
+    if(scan_code == keys[num].right && xpos<5)
         if(gameinfo[num].grid[xpos+1].col[ypos+14*(ypos==-1)]==0)
             x+=16;
             xpos++;
@@ -831,7 +852,7 @@ repeat
 
     end
 
-    if(key(_down) || timer[1]>dropnext)
+    if(key(keys[num].down) || timer[1]>dropnext)
         dropnext=timer[1]+dropinter;
 
         // check if block below is free
@@ -1029,15 +1050,15 @@ end
 
 loop
     graph=210;
-    if(key(_left))
+    if(key(keys[0].left))
         graph=211;
     end
 
-    if(key(_right))
+    if(key(keys[num].right))
         graph=212;
     end
 
-    if(key(_down))
+    if(key(keys[num].down))
         graph=213;
     end
 
@@ -1061,7 +1082,7 @@ loop
 
     graph=214;
 
-    if(key(_space))
+    if(key(keys[num].swap))
 
         graph=215;
 
