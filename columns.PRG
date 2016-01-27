@@ -10,7 +10,8 @@ struct gameinfo[3]
 
     struct grid[6]
          col[16];
-
+         newmatch[16];
+         matched[16];
          struct data[14];
             jewelid;
             destroyed;
@@ -19,20 +20,23 @@ struct gameinfo[3]
 
     // struct that stores the grid used for the hints
     // and for the cpu player
-    struct hints[3]
-        struct map[6]
-            col[16];
-        end
 
+    struct hints[3]   // each "swap" variant
+
+        struct cols[6] // each possible position
+
+            struct grid[6]  // regular grid copy
+                col[16];
+            end
+        end
     end
-    //memcpy
 
     gameover=0;
 
     matched=0;
     checkmatch=0;
     smash=0;
-
+    newmatch=0;
     xpos;
     ypos;
     score;
@@ -396,6 +400,11 @@ begin
             end
 
             gameinfo[num].checkmatch=0;
+            for(gx=0;gx<3;gx++)
+                for(gy=0;gy<15;gy++)
+                    gameinfo[num].grid[gx].matched[gy]=0;
+                end
+            end
 
             repeat  // while falls
                 falls=0;
@@ -550,7 +559,6 @@ end
 function getnext(num)
 
 
-
 begin
 
 while(x<3)
@@ -569,15 +577,19 @@ process smash(xpos,ypos,num)
 private
 pos=0;
 flip=0;
-jeweli;
+jewelid;
 jewelm;
 xg=0;
 xc=0;
 yc=0;
 xcc=0;
 ycc=0;
-matched=0;
+//matched=0;
 maidx;
+
+matchpos;
+matchswap;
+
 
 struct matcharray[4]
     x;
@@ -606,6 +618,8 @@ loop
 
 
 if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
+    gameinfo[num].grid[xpos].matched[ypos]=0;
+
     graph=1+10*(abs(gameinfo[num].grid[xpos].col[ypos])-1);
     gameinfo[num].grid[xpos].col[ypos]=0;
 
@@ -626,55 +640,98 @@ if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
         frame;
     until(gameinfo[num].smash==0);
 
+    gameinfo[num].grid[xpos].matched[ypos]=0;
+
 else
+    if(gameinfo[num].grid[xpos].newmatch[ypos]==1)
+    //gameinfo[num].newmatch==1)
+        //matched=0;
 
-    matched=0;
-    jeweli = gameinfo[num].grid[xpos].col[ypos];
+     //   if(jewelid>0)
+            for(matchpos=0;matchpos<6;matchpos++)
+                for(matchswap=0;matchswap<3;matchswap++)
 
-    for(xg=0;xg<3;xg++) // 3 jewels
-        jewelm = gameinfo[num].play[xg];
-        // check matches fast
+                    // match out pseudo slot
+                    jewelid=gameinfo[num].hints[matchswap].cols[matchpos].grid[xpos].col[ypos];
+                    if(jewelid>0)
 
-        if(jewelm==jeweli)
-            matched=1;
-        end
-    end
+                    if(ypos>0)
+                        if(gameinfo[num].hints[matchswap].cols[matchpos].grid[xpos].col[ypos-1]==jewelid &&
+                           gameinfo[num].hints[matchswap].cols[matchpos].grid[xpos].col[ypos+1]==jewelid)
 
-        // check surrounds
-    if(matched==1)
-        matched=0;
-/*
-    for(maidx=0;maidx<4;maidx++)
-        xc=xpos+matcharray[maidx].x;
-        yc=ypos+matcharray[maidx].y;
-        xcc=1-xc;
-        ycc=1-yc;
-        if(xc>1)
-            if(yc>0)
-                if((gameinfo[num].hgrid[xc].col[yc]==jeweli || gameinfo[num].grid[xc].col[yc]==jeweli)
-                && gameinfo[num].grid[xc].col[yc+1]!=0)
-                    if(xpos+xcc<6)
-                        if(ypos+ycc>0)
-                            if(gameinfo[num].hgrid[xc].col[yc]==jeweli || gameinfo[num].grid[xc].col[yc]==jeweli)
-                                matched=1;
-                                break;
-                            end
+                           gameinfo[num].grid[xpos].matched[ypos]=jewelid;
+                           gameinfo[num].grid[xpos].matched[ypos-1]=jewelid;
+                           gameinfo[num].grid[xpos].matched[ypos+1]=jewelid;
+
                         end
                     end
-                end
-            end
+
+                    if(xpos>0 && xpos<5 )
+                        if(gameinfo[num].hints[matchswap].cols[matchpos].grid[xpos-1].col[ypos]==jewelid &&
+                           gameinfo[num].hints[matchswap].cols[matchpos].grid[xpos+1].col[ypos]==jewelid)
+
+                           gameinfo[num].grid[xpos].matched[ypos]=jewelid;
+                           gameinfo[num].grid[xpos-1].matched[ypos]=jewelid;
+                           gameinfo[num].grid[xpos+1].matched[ypos]=jewelid;
+
+                        end
+
+                        if(ypos>0)
+                            if(gameinfo[num].hints[matchswap].cols[matchpos].grid[xpos-1].col[ypos-1]==jewelid &&
+                               gameinfo[num].hints[matchswap].cols[matchpos].grid[xpos+1].col[ypos+1]==jewelid)
+
+                               gameinfo[num].grid[xpos].matched[ypos]=jewelid;
+                               gameinfo[num].grid[xpos-1].matched[ypos-1]=jewelid;
+                               gameinfo[num].grid[xpos+1].matched[ypos+1]=jewelid;
+
+                            end
+
+
+                            if(gameinfo[num].hints[matchswap].cols[matchpos].grid[xpos-1].col[ypos+1]==jewelid &&
+                               gameinfo[num].hints[matchswap].cols[matchpos].grid[xpos+1].col[ypos-1]==jewelid)
+
+                               gameinfo[num].grid[xpos].matched[ypos]=jewelid;
+                               gameinfo[num].grid[xpos-1].matched[ypos+1]=jewelid;
+                               gameinfo[num].grid[xpos+1].matched[ypos-1]=jewelid;
+
+                            end
+                        end
+
+                    end
+
+                    end
+
+        //    end
         end
     end
-*/
-    if(matched==1)
-        if(timer[1]%100<50)
+    gameinfo[num].grid[xpos].newmatch[ypos]=0;
+    flip=0;
+end
+
+//    jewelid =
+
+//    end
+    if(gameinfo[num].played==0 && gameinfo[num].grid[xpos].col[ypos]>0 && gameinfo[num].grid[xpos].matched[ypos]>0)
+       // flip++;
+       // flip=flip%10;
+        if(timer[0]%20<10);
             graph=10;
         end
     end
 
+    //else
+    //    if(gameinfo[num].grid[xpos].matched[ypos]>0)
+    //        graph=1+gameinfo[num].grid[xpos].matched[ypos]*10;
+    //    end
+    //end
+
+
+//    if(gameinfo[num].grid[xpo].matched[ypos]==1)
+
+
 //    else
 //        graph=0;
-end
+//end
 
 end
 
@@ -710,7 +767,15 @@ cnumber=2<<num;
 x=xpos*16+gameinfo[num].xpos+8;
 y=ypos*16+gameinfo[num].ypos+8-32;
 
+//if(num==0)
 //write_int(0,x,y,4,&gameinfo[num].grid[xpos].col[ypos]);
+//write_int(0,x+16+num*120,y,4,&gameinfo[num].hints[0].cols[0].grid[xpos].col[ypos]);
+//end
+
+//if(xpos==0)
+//write_int(0,x+num*120,y,4,&ypos);
+//end
+
 smash(xpos,ypos,num);
 loop
 //    if(true) //gameinfo[num].played==1)
@@ -832,7 +897,6 @@ process next(num,idx)
 private
 
 jewelid=-1;
-
 begin
 
 x=gameinfo[num].nextx+8;
@@ -853,6 +917,77 @@ end
 
 
 end
+
+process setupmatch(num)
+
+private
+col;
+tp=0;
+
+piece[4];
+
+colpos[6]; // to store our drop targets
+begin
+
+for(x=0;x<3;x++)
+    piece[x]=gameinfo[num].play[2-x];
+end
+
+
+for(col=0;col<6;col++)   // each possible position
+    for(graph=0;graph<3;graph++) // each swap
+
+        for(x=0;x<6;x++) // copy main grid
+            for(y=0;y<15;y++)
+                gameinfo[num].hints[graph].cols[col].grid[x].col[y]=
+                gameinfo[num].grid[x].col[y];
+
+                if(col==5)
+                    gameinfo[num].grid[x].newmatch[y]=1;
+                    gameinfo[num].grid[x].matched[y]=0;
+
+                end
+
+                if(gameinfo[num].grid[x].col[y]==0);
+                    colpos[x]=y;
+                end
+
+            end
+        end
+
+        // copy piece to grid in position / swapped
+        // rotate pieces (doesnt matter about the order, as long as they match
+        // button presses.
+        // we use 4 slots instead of 3 to use as a temp value.
+
+        tp=piece[0];
+        piece[0]=piece[1];
+        piece[1]=piece[2];
+        piece[2]=tp;
+
+        for(x=0;x<3;x++)
+            //debug;
+            if(colpos[col]-x>=0)
+               // debug;
+                gameinfo[num].hints[graph].cols[col].grid[col].col[colpos[col]-x]=piece[x];
+            end
+        end
+    end
+    x=160;
+    y=110;
+
+//graph=1+col*10;
+//frame;
+
+end
+//frame;
+//debug;
+
+gameinfo[num].newmatch=1;
+
+end
+
+
 
 process player(num)
 
@@ -893,7 +1028,7 @@ loop
     end
 
     donenext=0;
-
+    setupmatch(num);
 // copy the next into the current
 // we need 3 copies.
 // current
