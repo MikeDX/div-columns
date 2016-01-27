@@ -70,7 +70,7 @@ set_mode(320240);
 // load sounds
 
 // 0 - smash
-// 1 - ????
+// 1 - game over noise (repeated)
 // 2 - select
 // 3 - drop
 // 4 - level up?
@@ -360,7 +360,7 @@ begin
 
                     frame;//(200);
                     if(gameinfo[num].smash==8)
-                        sound(sounds[0],256,256);
+                        sound(sounds[0],512,256);
                     end
 
                     if(gameinfo[num].smash<7)
