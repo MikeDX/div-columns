@@ -290,7 +290,7 @@ begin
     //graph=301;
     //gameinfo[num].gameover=0;
 
-    x=xpos+3*16;
+    x=xpos+3*16+1;
     y=7*16+8;
     //flip=num*16;
     // set number of random jewels in this game
@@ -333,7 +333,7 @@ begin
                 graph=401+(num%2);
             end
 
-            if(key(keys[num].start))
+            if(key(keys[num].start) || key(keys[num].swap))
                 myplayer=player(num);
                 gameinfo[num].playing=1;
             end
