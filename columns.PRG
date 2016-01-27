@@ -35,8 +35,8 @@ struct gameinfo[3]
     checkbest=0;
     ts;
     tc;
+    autoplay=1;
     auto=0;
-
     gameover=0;
 
     matched=0;
@@ -364,7 +364,7 @@ begin
                 graph=401+(num%2);
             end
 
-            if(key(keys[num].start) || key(keys[num].swap))
+            if(key(keys[num].start) || key(keys[num].swap) || gameinfo[num].autoplay==1)
                 myplayer=player(num);
                 gameinfo[num].playing=1;
             end
@@ -1011,6 +1011,8 @@ bests;
 bestc;
 score;
 best;
+bestpos;
+
 begin
 
 write_int(0,120*num,0,0,&bests);
@@ -1045,10 +1047,12 @@ if(gameinfo[num].checkbest==1)
 
         bests=rand(0,2);
         bestc=rand(0,5);
+        bestpos=0;
 
         for(x=0;x<6;x++)
-            if(gameinfo[num].colpos[x]>bestc)
-                bestc=gameinfo[num].colpos[x];
+            if(gameinfo[num].colpos[x]>bestpos)
+                bestpos=gameinfo[num].colpos[x];
+                bestc=x;//gameinfo[num].colpos[x];
             end
         end
 
