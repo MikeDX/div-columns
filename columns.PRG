@@ -79,7 +79,7 @@ sounds[8];
 
 begin
 
-//set_fps(50,2);
+set_fps(50,2);
 
 
 // reset the timer
@@ -321,7 +321,7 @@ begin
     y=7*16+8;
     //flip=num*16;
     // set number of random jewels in this game
-    gameinfo[num].jewels=6;//4+rand(0,2);
+    gameinfo[num].jewels=6;//+rand(0,2);
     // set the game zpos ypos
     gameinfo[num].xpos=0;//xpos;
     gameinfo[num].ypos=0;//ypos;
@@ -944,12 +944,16 @@ colpos[6]; // to store our drop targets
 begin
 
 for(x=0;x<3;x++)
-    piece[x]=gameinfo[num].play[2-x];
+    piece[x]=gameinfo[num].play[x];
 end
 
 gameinfo[num].checkbest=1;
 
 for(col=0;col<6;col++)   // each possible position
+    for(x=0;x<3;x++)
+        piece[x]=gameinfo[num].play[x];
+    end
+
     for(graph=0;graph<3;graph++) // each swap
         gameinfo[num].hints[graph].cols[col].score=0;
 
@@ -976,18 +980,26 @@ for(col=0;col<6;col++)   // each possible position
         // button presses.
         // we use 4 slots instead of 3 to use as a temp value.
 
+
+                /*
         tp=piece[0];
         piece[0]=piece[2];
         piece[2]=piece[1];
         piece[1]=tp;
-
+        */
         for(x=0;x<3;x++)
             //debug;
-            if(colpos[col]-x>=0)
+         //   if(colpos[col]-x>=0)
                // debug;
-                gameinfo[num].hints[2-graph].cols[col].grid[col].col[gameinfo[num].colpos[col]-x]=piece[x];
-            end
+                gameinfo[num].hints[graph].cols[col].grid[col].col[gameinfo[num].colpos[col]-x]=piece[2-x];
+         //   end
         end
+        // swap the piece for the next move
+        tp=piece[2];
+        piece[2]=piece[1];
+        piece[1]=piece[0];
+        piece[0]=tp;
+
     end
     x=160;
     y=110;
@@ -1015,9 +1027,9 @@ bestpos;
 
 begin
 
-write_int(0,120*num,0,0,&bests);
-write_int(0,120*num,16,0,&bestc);
-write_int(0,120*num,32,0,&best);
+//write_int(0,120*num,0,0,&bests);
+//write_int(0,120*num,16,0,&bestc);
+//write_int(0,120*num,32,0,&best);
 
 loop
 
@@ -1090,7 +1102,9 @@ donenext=0;
 autoswap=0;
 autoright=0;
 autoleft=0;
+autodown=0;
 
+cpos=0;
 begin
 gameinfo[0].played=0;
 region=num+1;
@@ -1103,7 +1117,6 @@ pjewel(num,1);
 pjewel(num,2);
 
 getnext(num);
-autoswap=0;
 
 //write_int(0,num*160,0,0,&x);
 //write_int(0,num*160,16,0,&ypos);
@@ -1119,6 +1132,7 @@ loop
 //    gameinfo[num].roll=0;
     donenext=0;
     setupmatch(num);
+    cpos=0;
 // copy the next into the current
 // we need 3 copies.
 // current
@@ -1147,8 +1161,14 @@ repeat
 
     // auto play
     if(gameinfo[num].auto==1)
-        if(gameinfo[num].ts>0)
-            gameinfo[num].ts--;
+
+        autoswap=0;
+        autoleft=0;
+        autoright=0;
+        autodown=0;
+
+        if(gameinfo[num].ts!=cpos)
+            //gameinfo[num].ts--;
             autoswap=1;
         end
 
@@ -1159,11 +1179,18 @@ repeat
         if(gameinfo[num].tc<xpos)
             autoleft=1;
         end
+        if(autoswap==0 && autoleft==0 && autoright==0)
+            autodown=1;
+        end
+
     end
 
     if(scan_code == keys[num].swap || autoswap)
         sound(sounds[6],256,256);
-
+        cpos++;
+        if(cpos==3)
+            cpos=0;
+        end
         tp=gameinfo[num].play[2];
         gameinfo[num].play[2]=gameinfo[num].play[1];
         gameinfo[num].play[1]=gameinfo[num].play[0];
@@ -1173,33 +1200,30 @@ repeat
                 gameinfo[num].next[tp]=gameinfo[num].play[tp];
             end
         end
-        autoswap=0;
     end
 
 
 
     if(autoleft || (scan_code == keys[num].left && xpos>0))
-       if(gameinfo[num].grid[xpos-1].col[ypos+14*(ypos==-1)]==0)
-       //gameinfo[num].play[2];
-
-       x-=16;
-       xpos--;
-       end
-       autoleft=0;
+        if(gameinfo[num].grid[xpos-1].col[ypos]==0 &&
+         gameinfo[num].grid[xpos-1].col[ypos-1*(ypos>0)]==0)
+            x-=16;
+            xpos--;
+        end
 
     end
 
 
 
     if(autoright==1 || (scan_code == keys[num].right && xpos<5))
-        if(gameinfo[num].grid[xpos+1].col[ypos+14*(ypos==-1)]==0)
+        if(gameinfo[num].grid[xpos+1].col[ypos]==0 &&
+          gameinfo[num].grid[xpos+1].col[ypos-1*(ypos>0)]==0)
             x+=16;
             xpos++;
         end
-        autoright=0;
     end
 
-    if(key(keys[num].down) || timer[1]>dropnext || gameinfo[num].auto==1)
+    if(key(keys[num].down) || timer[1]>dropnext || autodown==1)
         dropnext=timer[1]+dropinter;
 
         // check if block below is free
