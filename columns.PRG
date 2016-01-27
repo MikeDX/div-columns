@@ -12,6 +12,7 @@ struct gameinfo[3]
          col[16];
          newmatch[16];
          matched[16];
+         rollmatch[16];
          struct data[14];
             jewelid;
             destroyed;
@@ -28,8 +29,13 @@ struct gameinfo[3]
             struct grid[6]  // regular grid copy
                 col[16];
             end
+            score;
         end
     end
+    checkbest=0;
+    ts;
+    tc;
+    auto=0;
 
     gameover=0;
 
@@ -48,6 +54,7 @@ struct gameinfo[3]
     jewels;
     played=1;
     playing=0;
+    colpos[6];
 
 END
 
@@ -314,7 +321,7 @@ begin
     y=7*16+8;
     //flip=num*16;
     // set number of random jewels in this game
-    gameinfo[num].jewels=4+rand(0,2);
+    gameinfo[num].jewels=6;//4+rand(0,2);
     // set the game zpos ypos
     gameinfo[num].xpos=0;//xpos;
     gameinfo[num].ypos=0;//ypos;
@@ -412,6 +419,7 @@ begin
                 for(gy=14;gy>=0;gy--)
 
                     for(gx=0;gx<6;gx++)
+                        gameinfo[num].grid[gx].matched[gy]=0;
 
                         if(gameinfo[num].grid[gx].col[gy]==0)
                             gaps=1;
@@ -663,6 +671,9 @@ else
                            gameinfo[num].grid[xpos].matched[ypos-1]=jewelid;
                            gameinfo[num].grid[xpos].matched[ypos+1]=jewelid;
 
+                           gameinfo[num].hints[matchswap].cols[matchpos].score++;
+
+
                         end
                     end
 
@@ -673,6 +684,7 @@ else
                            gameinfo[num].grid[xpos].matched[ypos]=jewelid;
                            gameinfo[num].grid[xpos-1].matched[ypos]=jewelid;
                            gameinfo[num].grid[xpos+1].matched[ypos]=jewelid;
+                            gameinfo[num].hints[matchswap].cols[matchpos].score++;
 
                         end
 
@@ -683,6 +695,7 @@ else
                                gameinfo[num].grid[xpos].matched[ypos]=jewelid;
                                gameinfo[num].grid[xpos-1].matched[ypos-1]=jewelid;
                                gameinfo[num].grid[xpos+1].matched[ypos+1]=jewelid;
+                               gameinfo[num].hints[matchswap].cols[matchpos].score++;
 
                             end
 
@@ -693,6 +706,7 @@ else
                                gameinfo[num].grid[xpos].matched[ypos]=jewelid;
                                gameinfo[num].grid[xpos-1].matched[ypos+1]=jewelid;
                                gameinfo[num].grid[xpos+1].matched[ypos-1]=jewelid;
+                               gameinfo[num].hints[matchswap].cols[matchpos].score++;
 
                             end
                         end
@@ -933,9 +947,11 @@ for(x=0;x<3;x++)
     piece[x]=gameinfo[num].play[2-x];
 end
 
+gameinfo[num].checkbest=1;
 
 for(col=0;col<6;col++)   // each possible position
     for(graph=0;graph<3;graph++) // each swap
+        gameinfo[num].hints[graph].cols[col].score=0;
 
         for(x=0;x<6;x++) // copy main grid
             for(y=0;y<15;y++)
@@ -949,7 +965,7 @@ for(col=0;col<6;col++)   // each possible position
                 end
 
                 if(gameinfo[num].grid[x].col[y]==0);
-                    colpos[x]=y;
+                    gameinfo[num].colpos[x]=y;
                 end
 
             end
@@ -961,15 +977,15 @@ for(col=0;col<6;col++)   // each possible position
         // we use 4 slots instead of 3 to use as a temp value.
 
         tp=piece[0];
-        piece[0]=piece[1];
-        piece[1]=piece[2];
-        piece[2]=tp;
+        piece[0]=piece[2];
+        piece[2]=piece[1];
+        piece[1]=tp;
 
         for(x=0;x<3;x++)
             //debug;
             if(colpos[col]-x>=0)
                // debug;
-                gameinfo[num].hints[graph].cols[col].grid[col].col[colpos[col]-x]=piece[x];
+                gameinfo[num].hints[2-graph].cols[col].grid[col].col[gameinfo[num].colpos[col]-x]=piece[x];
             end
         end
     end
@@ -987,6 +1003,72 @@ gameinfo[num].newmatch=1;
 
 end
 
+process bestmove(num)
+
+private
+
+bests;
+bestc;
+score;
+best;
+begin
+
+write_int(0,120*num,0,0,&bests);
+write_int(0,120*num,16,0,&bestc);
+write_int(0,120*num,32,0,&best);
+
+loop
+
+if(gameinfo[num].checkbest==1)
+    //debug;
+    frame(500);
+
+    bests=0;
+    bestc=0;
+    best=0;
+    gameinfo[num].auto=0;
+
+    for(x=0;x<3;x++)
+        for(y=0;y<6;y++)
+            score=gameinfo[num].hints[x].cols[y].score;
+
+            if(score>best)
+                bests=x;
+                bestc=y;
+                best=score;
+            end
+
+        end
+    end
+
+    if(best==0)
+
+        bests=rand(0,2);
+        bestc=rand(0,5);
+
+        for(x=0;x<6;x++)
+            if(gameinfo[num].colpos[x]>bestc)
+                bestc=gameinfo[num].colpos[x];
+            end
+        end
+
+
+    end
+
+    gameinfo[num].checkbest=0;
+    gameinfo[num].ts=bests;
+    gameinfo[num].tc=bestc;
+    gameinfo[num].auto=1;
+
+
+
+end
+
+frame;
+
+end
+
+end
 
 
 process player(num)
@@ -1001,6 +1083,10 @@ d=0;
 gameover=0;
 tp=0;
 donenext=0;
+autoswap=0;
+autoright=0;
+autoleft=0;
+
 begin
 gameinfo[0].played=0;
 region=num+1;
@@ -1013,10 +1099,10 @@ pjewel(num,1);
 pjewel(num,2);
 
 getnext(num);
+autoswap=0;
 
 //write_int(0,num*160,0,0,&x);
 //write_int(0,num*160,16,0,&ypos);
-
 loop
 
     while(gameinfo[num].gameover==1)
@@ -1026,7 +1112,7 @@ loop
     for(tp=0;tp<3;tp++)
         gameinfo[num].play[tp]=gameinfo[num].next[tp];
     end
-
+//    gameinfo[num].roll=0;
     donenext=0;
     setupmatch(num);
 // copy the next into the current
@@ -1050,11 +1136,28 @@ x=40;//gameinfo[num].xpos+8+16*xpos;
 
 // reset the gameinfo to say the piece is "in play"
 gameinfo[num].played=0;
+bestmove(num);
 
 // main loop, repeated until gameover
 repeat
 
-    if(scan_code == keys[num].swap)
+    // auto play
+    if(gameinfo[num].auto==1)
+        if(gameinfo[num].ts>0)
+            gameinfo[num].ts--;
+            autoswap=1;
+        end
+
+        if(gameinfo[num].tc>xpos)
+            autoright=1;
+        end
+
+        if(gameinfo[num].tc<xpos)
+            autoleft=1;
+        end
+    end
+
+    if(scan_code == keys[num].swap || autoswap)
         sound(sounds[6],256,256);
 
         tp=gameinfo[num].play[2];
@@ -1066,27 +1169,33 @@ repeat
                 gameinfo[num].next[tp]=gameinfo[num].play[tp];
             end
         end
+        autoswap=0;
     end
 
-    if(scan_code == keys[num].left && xpos>0)
+
+
+    if(autoleft || (scan_code == keys[num].left && xpos>0))
        if(gameinfo[num].grid[xpos-1].col[ypos+14*(ypos==-1)]==0)
        //gameinfo[num].play[2];
 
        x-=16;
        xpos--;
        end
-
+       autoleft=0;
 
     end
-    if(scan_code == keys[num].right && xpos<5)
+
+
+
+    if(autoright==1 || (scan_code == keys[num].right && xpos<5))
         if(gameinfo[num].grid[xpos+1].col[ypos+14*(ypos==-1)]==0)
             x+=16;
             xpos++;
         end
-
+        autoright=0;
     end
 
-    if(key(keys[num].down) || timer[1]>dropnext)
+    if(key(keys[num].down) || timer[1]>dropnext || gameinfo[num].auto==1)
         dropnext=timer[1]+dropinter;
 
         // check if block below is free
