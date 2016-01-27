@@ -17,6 +17,16 @@ struct gameinfo[3]
          end
     end
 
+    // struct that stores the grid used for the hints
+    // and for the cpu player
+    struct hints[3]
+        struct map[6]
+            col[16];
+        end
+
+    end
+    //memcpy
+
     gameover=0;
 
     matched=0;
@@ -188,7 +198,7 @@ loop
             gameinfo[0].gameover=0;
             gameinfo[1].gameover=0;
             game(16,8,0);
-        game(208,8,1);
+            game(208,8,1);
         end
 
     end
@@ -198,14 +208,19 @@ loop
     // show this grid for 10 seconds, or until escape press
     // or continuously if not in attract mode
     repeat
+    // only check every second
+        frame(2400);
+
         if(gameinfo[0].playing==1||
            gameinfo[1].playing==1||
            gameinfo[2].playing==1)
 
             timeout=timer[0]+1000;
         end
-        frame(2400);
-    until (timer[0]>timeout);
+            until (timer[0]>timeout);
+    stop_scroll(0);
+    stop_scroll(1);
+    stop_scroll(2);
 
     fadeonoff();
 
@@ -286,23 +301,28 @@ flip=0;
 s=0;
 
 begin
+    write_int(0,num*160,32,0,&cnumber);
+
     // background grid
     //graph=301;
     //gameinfo[num].gameover=0;
-
-    x=xpos+3*16+1;
+    x=3*16+1;//xpos+3*16+1;
     y=7*16+8;
     //flip=num*16;
     // set number of random jewels in this game
     gameinfo[num].jewels=4+rand(0,2);
     // set the game zpos ypos
-    gameinfo[num].xpos=xpos;
-    gameinfo[num].ypos=ypos;
+    gameinfo[num].xpos=0;//xpos;
+    gameinfo[num].ypos=0;//ypos;
 
     // setup a region for this grid (makes the sprite hiding easy)
+    // xpos now only used to setup the scroll / region
     define_region(num+1,xpos,ypos,96,208);
+    start_scroll(num+1,file,0,301,num+1,15);
 
     region=num+1;
+    cnumber=2<<num;
+    ctype=c_scroll;
 
     gameinfo[num].next[0]=0;
     gameinfo[num].next[1]=0;
@@ -422,9 +442,6 @@ begin
         gameinfo[num].played=0;
 
     if(gameinfo[num].gameover==1)
-        //debug;
-       // gameinfo[num].smash=1;
-       //s=sound(sounds[1],256,256);
 
        gameoversprite(num);
 
@@ -473,7 +490,9 @@ graph=410;
 
 x=gameinfo[num].xpos+3*16;
 y=gameinfo[num].ypos+8+16*20;
-region=num+1;
+region=father.region;
+cnumber=father.cnumber;
+ctype=father.ctype;
 
 while(y>92)
     y-=8;
@@ -514,6 +533,8 @@ process wipes(num,x,y,speed)
 begin
     graph=60;
     region=num+1;
+    cnumber=2<<num;
+    ctype=c_scroll;
     x=gameinfo[num].xpos+8+x*16;
     y=gameinfo[num].ypos+8+(y-2)*16;
     while (graph<67);
@@ -567,6 +588,9 @@ END=-1,-1, 0,-1, 1,-1, -1,-1;
 begin
 graph=0;
 region=num+1;
+cnumber=2<<num;
+ctype=c_scroll;
+
 x=xpos*16+gameinfo[num].xpos+8;
 y=ypos*16+gameinfo[num].ypos+8-32;
 
@@ -680,6 +704,9 @@ counter=0;
 begin
 
 region = num+1;
+ctype=c_scroll;
+cnumber=2<<num;
+
 x=xpos*16+gameinfo[num].xpos+8;
 y=ypos*16+gameinfo[num].ypos+8-32;
 
@@ -842,34 +869,31 @@ donenext=0;
 begin
 gameinfo[0].played=0;
 region=num+1;
-
+cnumber=2<<num;
+ctype=c_scroll;
 //show player jewels
-
+x=-100;
 pjewel(num,0);
 pjewel(num,1);
 pjewel(num,2);
 
 getnext(num);
 
-loop
-    while(gameinfo[num].gameover==1)
-        //graph=216;
-        //x=gameinfo[num].xpos+48;
-        //y=100;
-     //   if(key(_1))
-     //       gameinfo[num].gameover=0;
-     //   end
+//write_int(0,num*160,0,0,&x);
+//write_int(0,num*160,16,0,&ypos);
 
+loop
+
+    while(gameinfo[num].gameover==1)
         frame;
     end
-
     // populate the "next" grid
-
-    for(x=0;x<3;x++)
-        gameinfo[num].play[x]=gameinfo[num].next[x];
+    for(tp=0;tp<3;tp++)
+        gameinfo[num].play[tp]=gameinfo[num].next[tp];
     end
 
     donenext=0;
+
 // copy the next into the current
 // we need 3 copies.
 // current
@@ -879,15 +903,15 @@ loop
 // since the next changes as the current comes into view
 
 // out half/tile position
-d=0;
+d=1;
 // exact grid positions
 xpos=2;
-ypos=1;
+ypos=0;
 
 // player box outline
 graph=300;
-y=-24;
-x=gameinfo[num].xpos+8+16*xpos;
+y=-48;
+x=40;//gameinfo[num].xpos+8+16*xpos;
 
 // reset the gameinfo to say the piece is "in play"
 gameinfo[num].played=0;
@@ -942,13 +966,12 @@ repeat
             ypos++;
         end
 
-        if(d==0)
+        if(d==1)
         if(ypos==15 || gameinfo[num].grid[xpos].col[ypos]!=0)
             y=y-8;
-
             xpos=(x-8-(gameinfo[num].xpos))/16;
-            ypos=(y-(y%16))/16+2;
-
+            //ypos=(y-(y%16))/16+2;
+            ypos--;
             // populate play grid
             if(ypos>1)
                 gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
@@ -979,7 +1002,7 @@ until (gameinfo[num].played==1);
 
     // hide the player jewels and wait until main loop
     // has done its checks to resume play
-    x=-1;
+    x=-100;
     repeat
         frame;
     until (gameinfo[num].played==0)
@@ -987,6 +1010,7 @@ until (gameinfo[num].played==1);
 
 end
 
+// never reached?
 debug;
 
 end
@@ -994,11 +1018,18 @@ end
 
 process pjewel(num,idx)
 
+private
+idy;
+
 // show the jewels the player has
 begin
+    x=-100;
     priority=father.priority-1;
 
     region=num+1;
+    cnumber=2<<num;
+    ctype=c_scroll;
+    idy=idx*16;
 
     // repeat whilst not gameover
     loop
@@ -1007,7 +1038,7 @@ begin
 
             // get coords from player
             x=father.x;
-            y=father.y-16+idx*16;
+            y=father.y-16+idy;
 
         else
             graph=0;
