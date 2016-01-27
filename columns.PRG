@@ -218,9 +218,9 @@ loop
             timeout=timer[0]+1000;
         end
             until (timer[0]>timeout);
-    stop_scroll(0);
     stop_scroll(1);
     stop_scroll(2);
+    stop_scroll(3);
 
     fadeonoff();
 
@@ -301,11 +301,11 @@ flip=0;
 s=0;
 
 begin
-    write_int(0,num*160,32,0,&cnumber);
+    //write_int(0,num*160,32,0,&cnumber);
 
     // background grid
     //graph=301;
-    //gameinfo[num].gameover=0;
+    gameinfo[num].gameover=0;
     x=3*16+1;//xpos+3*16+1;
     y=7*16+8;
     //flip=num*16;
