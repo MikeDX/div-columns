@@ -148,6 +148,9 @@ loop
     while(!key(_space)  && timer[0]<1000)
         frame;
     end
+    if(key(_space))
+        sound(sounds[2],256,256);
+    end
 
     signal(type press_start, s_kill);
 
