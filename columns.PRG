@@ -36,8 +36,6 @@ struct gameinfo[3]
     checkbest=0;
     ts;
     tc;
-    autoplay=0;
-    auto=0;
     gameover=0;
 
     matched=0;
@@ -56,6 +54,17 @@ struct gameinfo[3]
     played=1;
     playing=0;
     colpos[6];
+
+    // auto play data
+
+    autoswap=0;
+    autoright=0;
+    autoleft=0;
+    autodown=0;
+    autoplay=0;
+    auto=0;
+
+
 
 END
 
@@ -351,7 +360,7 @@ begin
     y=7*16+8;
     //flip=num*16;
     // set number of random jewels in this game
-    gameinfo[num].jewels=6;//+rand(0,2);
+    gameinfo[num].jewels=4;//;//6;//+rand(0,2);
     // set the game zpos ypos
     gameinfo[num].xpos=0;//xpos;
     gameinfo[num].ypos=0;//ypos;
@@ -396,6 +405,8 @@ begin
 
             if(key(keys[num].auto))
                 gameinfo[num].autoplay=1;
+                gameinfo[num].jewels=rand(5,6);
+
             end
 
 
@@ -1307,7 +1318,6 @@ end
 
 process player(num)
 
-
 private
 dropinter=100;
 dropnext=0;
@@ -1317,11 +1327,6 @@ d=0;
 gameover=0;
 tp=0;
 donenext=0;
-autoswap=0;
-autoright=0;
-autoleft=0;
-autodown=0;
-
 cpos=0;
 begin
 gameinfo[0].played=0;
@@ -1335,13 +1340,14 @@ pjewel(num,1);
 pjewel(num,2);
 
 getnext(num);
-autoswap=0;
-autoleft=0;
-autoright=0;
-autodown=0;
+
 
 if(gameinfo[num].autoplay==1)
     demo(num);
+    if(num!=2)
+//        joystick(num);
+    end
+
 end
 
 //write_int(0,num*160,0,0,&x);
@@ -1386,33 +1392,34 @@ bestmove(num);
 repeat
 
     // auto play
-    if(gameinfo[num].auto==1 && gameinfo[num].autoplay==1)
+    if(gameinfo[num].autoplay==1)
 
-        autoswap=0;
-        autoleft=0;
-        autoright=0;
-        autodown=0;
+        gameinfo[num].autoswap=0;
+        gameinfo[num].autoleft=0;
+        gameinfo[num].autoright=0;
+        gameinfo[num].autodown=0;
 
-        if(gameinfo[num].ts!=cpos)
-            //gameinfo[num].ts--;
-            autoswap=1;
-        end
+        if(gameinfo[num].auto==1)
+            if(gameinfo[num].ts!=cpos)
+                gameinfo[num].autoswap=1;
+            end
 
-        if(gameinfo[num].tc>xpos)
-            autoright=1;
-        end
+            if(gameinfo[num].tc>xpos)
+                gameinfo[num].autoright=1;
+            end
 
-        if(gameinfo[num].tc<xpos)
-            autoleft=1;
-        end
+            if(gameinfo[num].tc<xpos)
+                gameinfo[num].autoleft=1;
+            end
 
-        if(autoswap==0 && autoleft==0 && autoright==0)
-            autodown=1;
+            if(gameinfo[num].played==0 && gameinfo[num].autoswap==0  && gameinfo[num].autoleft==0 && gameinfo[num].autoright==0)
+                gameinfo[num].autodown=1;
+            end
         end
 
     end
 
-    if(scan_code == keys[num].swap || autoswap)
+    if(scan_code == keys[num].swap || gameinfo[num].autoswap==1)
         sound(sounds[6],256,256);
         cpos++;
         if(cpos==3)
@@ -1431,7 +1438,7 @@ repeat
 
 
 
-    if(autoleft || (scan_code == keys[num].left && xpos>0))
+    if(gameinfo[num].autoleft==1 || (scan_code == keys[num].left && xpos>0))
         if(gameinfo[num].grid[xpos-1].col[ypos]==0 &&
          gameinfo[num].grid[xpos-1].col[ypos-1*(ypos>0)]==0)
             x-=16;
@@ -1442,7 +1449,7 @@ repeat
 
 
 
-    if(autoright==1 || (scan_code == keys[num].right && xpos<5))
+    if(gameinfo[num].autoright==1 || (scan_code == keys[num].right && xpos<5))
         if(gameinfo[num].grid[xpos+1].col[ypos]==0 &&
           gameinfo[num].grid[xpos+1].col[ypos-1*(ypos>0)]==0)
             x+=16;
@@ -1450,7 +1457,7 @@ repeat
         end
     end
 
-    if(key(keys[num].down) || timer[1]>dropnext || autodown==1)
+    if(key(keys[num].down) || timer[1]>dropnext || gameinfo[num].autodown==1)
         dropnext=timer[1]+dropinter;
 
         // check if block below is free
@@ -1498,6 +1505,11 @@ repeat
     frame;
 
 until (gameinfo[num].played==1);
+
+    gameinfo[num].autoswap=0;
+    gameinfo[num].autoleft=0;
+    gameinfo[num].autoright=0;
+    gameinfo[num].autodown=0;
 
     // hide the player jewels and wait until main loop
     // has done its checks to resume play
@@ -1646,27 +1658,38 @@ process joystick(num)
 
 begin
 
-x=160;
-y=200;
-button(2);
-
 if(num==2)
-x+=80;
+    x=240;
+    y=200;
+else
+    ctype=c_scroll;
+    cnumber=father.cnumber;
+    region=father.region;
+    x=32;
+    y=200;
 end
+button(num);
 
 loop
     graph=210;
-    if(key(keys[0].left))
+    if(key(keys[0].left) || gameinfo[num].autoleft==1)
         graph=211;
     end
 
-    if(key(keys[num].right))
+    if(key(keys[num].right) || gameinfo[num].autoright==1)
         graph=212;
     end
 
-    if(key(keys[num].down))
+    if(key(keys[num].down) || gameinfo[num].autodown==1)
         graph=213;
     end
+
+  /*
+    if(gameinfo[num].autoplay==1)
+        graph+=100;
+    end
+  */
+
 
     frame;
 end
@@ -1677,23 +1700,31 @@ process button(num)
 
 begin
 
-x=220;
-y=190;
-
 if(num==2)
-x+=80;
+    x=300;
+    y=190;
+else
+    ctype=c_scroll;
+    cnumber=father.cnumber;
+    region=father.region;
+    x=72;
+    y=180;
 end
 
 loop
 
     graph=214;
 
-    if(key(keys[num].swap))
+    if(key(keys[num].swap) || gameinfo[num].autoswap==1)
 
         graph=215;
 
     end
-
+  /*
+    if(gameinfo[num].autoplay==1)
+        graph+=100;
+    end
+    */
     frame;
 
 end
@@ -1704,10 +1735,9 @@ process roll()
 
 begin
 
-loop
-
-roll_palette(0,255,1);
-frame;
+    loop
+        roll_palette(0,255,1);
+    frame;
 
 end
 
