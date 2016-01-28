@@ -112,7 +112,7 @@ sounds[8];
 
 
 begin
-rand_seed(1);
+//rand_seed(1);
 
 //set_fps(50,2);
 
@@ -1012,6 +1012,7 @@ for(col=0;col<6;col++)   // each possible position
         oldscore=gameinfo[num].hints[matchswap].cols[matchpos].score;
 
         for(xpos=0;xpos<6;xpos++)
+            if(colpos[x]>1)
             for(ypos=0;ypos<15;ypos++)
 
                 // reset match this board
@@ -1105,6 +1106,7 @@ for(col=0;col<6;col++)   // each possible position
                     end
 
                 end
+            end
             end
         end
         first++;
