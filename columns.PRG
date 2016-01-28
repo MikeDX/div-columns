@@ -64,6 +64,7 @@ struct gameinfo[3]
     autoplay=0;
     auto=0;
 
+    updateboards=0;
 
 
 END
@@ -90,13 +91,13 @@ sounds[8];
 
 begin
 
-//set_fps(50,2);
+set_fps(50,2);
 
 
 // reset the timer
 timer[0]=0;
-
 set_mode(320240);
+//set_mode(640480);
 
 
 // load sounds
@@ -168,6 +169,7 @@ loop
     y=50;
 
     // men intro with bag
+
     put_screen(0,205-(players==1));
 
     // bag of gems process
@@ -386,7 +388,12 @@ begin
     for(gx=0;gx<6;gx++)
         for(gy=15;gy>=0;gy--)
             gameinfo[num].grid[gx].col[gy]=0;
+            //if(gy>10)
+            //    gameinfo[num].grid[gx].col[gy]=1;
+            //else
             jewel(gx,gy,num);
+            //end
+
         end
     end
 
@@ -778,7 +785,8 @@ end
 //    jewelid =
 
 //    end
-    if(gameinfo[num].played==0 && gameinfo[num].grid[xpos].col[ypos]>0 && gameinfo[num].grid[xpos].matched[ypos]>0)
+    if(gameinfo[num].played==0 && gameinfo[num].grid[xpos].col[ypos]>0 &&
+    gameinfo[num].grid[xpos].matched[ypos]>0)
        // flip++;
        // flip=flip%10;
 //       debug;
@@ -1012,15 +1020,11 @@ first=0;
 colpos[6]; // to store our drop targets
 begin
 
-for(x=0;x<3;x++)
-    piece[x]=gameinfo[num].play[x];
-end
-
 gameinfo[num].checkbest=1;
+
 for(x=0;x<6;x++)
     for(y=0;y<15;y++)
         gameinfo[num].grid[x].matched[y]=0;
-
     end
 end
 
@@ -1049,6 +1053,7 @@ for(col=0;col<6;col++)   // each possible position
 
                 if(gameinfo[num].grid[x].col[y]==0);
                     gameinfo[num].colpos[x]=y;
+                    colpos[x]=y;
                 end
 
             end
@@ -1070,7 +1075,7 @@ for(col=0;col<6;col++)   // each possible position
             //debug;
             if(colpos[col]-x>=0)
                // debug;
-                gameinfo[num].hints[graph].cols[col].grid[col].col[gameinfo[num].colpos[col]-x]=piece[2-x];
+                gameinfo[num].hints[graph].cols[col].grid[col].col[colpos[col]-x]=piece[2-x];
             end
         end
 
@@ -1098,13 +1103,13 @@ for(col=0;col<6;col++)   // each possible position
                                 gameinfo[num].grid[xpos].matched[ypos-1]=jewelid;
                                 gameinfo[num].grid[xpos].matched[ypos+1]=jewelid;
                             end
+                            if(gameinfo[num].autoplay==1)
+                                gameinfo[num].grid[xpos].gmatched[ypos]=jewelid;
+                                gameinfo[num].grid[xpos].gmatched[ypos-1]=jewelid;
+                                gameinfo[num].grid[xpos].gmatched[ypos+1]=jewelid;
 
-                            gameinfo[num].grid[xpos].gmatched[ypos]=jewelid;
-                            gameinfo[num].grid[xpos].gmatched[ypos-1]=jewelid;
-                            gameinfo[num].grid[xpos].gmatched[ypos+1]=jewelid;
-
-                            gameinfo[num].hints[matchswap].cols[matchpos].score++;
-
+                                gameinfo[num].hints[matchswap].cols[matchpos].score++;
+                            end
 
                         end
                     end
@@ -1118,13 +1123,13 @@ for(col=0;col<6;col++)   // each possible position
                                 gameinfo[num].grid[xpos-1].matched[ypos]=jewelid;
                                 gameinfo[num].grid[xpos+1].matched[ypos]=jewelid;
                             end
+                            if(gameinfo[num].autoplay==1)
+                                gameinfo[num].grid[xpos].gmatched[ypos]=jewelid;
+                                gameinfo[num].grid[xpos-1].gmatched[ypos]=jewelid;
+                                gameinfo[num].grid[xpos+1].gmatched[ypos]=jewelid;
 
-                            gameinfo[num].grid[xpos].gmatched[ypos]=jewelid;
-                            gameinfo[num].grid[xpos-1].gmatched[ypos]=jewelid;
-                            gameinfo[num].grid[xpos+1].gmatched[ypos]=jewelid;
-
-
-                            gameinfo[num].hints[matchswap].cols[matchpos].score++;
+                                gameinfo[num].hints[matchswap].cols[matchpos].score++;
+                            end
 
                         end
 
@@ -1137,14 +1142,13 @@ for(col=0;col<6;col++)   // each possible position
                                     gameinfo[num].grid[xpos-1].matched[ypos-1]=jewelid;
                                     gameinfo[num].grid[xpos+1].matched[ypos+1]=jewelid;
                                 end
+                                if(gameinfo[num].autoplay==1)
+                                    gameinfo[num].grid[xpos].gmatched[ypos]=jewelid;
+                                    gameinfo[num].grid[xpos-1].gmatched[ypos-1]=jewelid;
+                                    gameinfo[num].grid[xpos+1].gmatched[ypos+1]=jewelid;
 
-                                gameinfo[num].grid[xpos].gmatched[ypos]=jewelid;
-                                gameinfo[num].grid[xpos-1].gmatched[ypos-1]=jewelid;
-                                gameinfo[num].grid[xpos+1].gmatched[ypos+1]=jewelid;
-
-
-                                gameinfo[num].hints[matchswap].cols[matchpos].score++;
-
+                                    gameinfo[num].hints[matchswap].cols[matchpos].score++;
+                                end
                             end
 
 
@@ -1157,11 +1161,13 @@ for(col=0;col<6;col++)   // each possible position
                                     gameinfo[num].grid[xpos+1].matched[ypos-1]=jewelid;
                                 end
 
-                                gameinfo[num].grid[xpos].gmatched[ypos]=jewelid;
-                                gameinfo[num].grid[xpos-1].gmatched[ypos+1]=jewelid;
-                                gameinfo[num].grid[xpos+1].gmatched[ypos-1]=jewelid;
+                                if(gameinfo[num].autoplay==1)
+                                    gameinfo[num].grid[xpos].gmatched[ypos]=jewelid;
+                                    gameinfo[num].grid[xpos-1].gmatched[ypos+1]=jewelid;
+                                    gameinfo[num].grid[xpos+1].gmatched[ypos-1]=jewelid;
 
-                               gameinfo[num].hints[matchswap].cols[matchpos].score++;
+                                    gameinfo[num].hints[matchswap].cols[matchpos].score++;
+                                end
 
                             end
                         end
@@ -1175,7 +1181,7 @@ for(col=0;col<6;col++)   // each possible position
 
         newscore=gameinfo[num].hints[matchswap].cols[matchpos].score-oldscore;
         // check for drops
-        if(newscore>0)
+        if(newscore>0 && gameinfo[num].autoplay==1 )
         //gameinfo[num].hints[matchswap].cols[matchpos].score>0)
             drops=0;
             //debug;
@@ -1315,6 +1321,60 @@ end
 
 end
 
+process boards(num)
+
+private;
+
+
+swap=0;
+cols=0;
+xpos=0;
+ypos=0;
+gem=0;
+begin
+
+if(num==-1)
+loop
+if(num==0 || num==2)
+if(gameinfo[num].updateboards==1)
+//    sound(sounds[5],256,256);
+    gameinfo[num].updateboards=0;
+    clear_screen();
+
+    for(swap=0;swap<3;swap++)
+        for(cols=0;cols<6;cols++)
+            for(xpos=0;xpos<6;xpos++)
+                for(ypos=0;ypos<15;ypos++)
+
+                    xput(file,10,320+xpos*16+(7*15*swap),20+ypos*16+(16*16*cols),0,100,0,0);
+
+                    gem=gameinfo[num].hints[swap].cols[cols].grid[xpos].col[ypos];
+                    if(gem>0)
+                    graph=1+(gem*10);
+
+                        xput(file,graph,320+xpos*16+(7*15*swap),20+ypos*16+(16*16*cols),0,100,0,0);
+                    end
+               end
+           end
+        end
+    end
+
+
+end
+
+end
+
+frame;
+
+end
+
+end
+
+
+
+end
+
+
 
 process player(num)
 
@@ -1328,7 +1388,10 @@ gameover=0;
 tp=0;
 donenext=0;
 cpos=0;
+
+
 begin
+
 gameinfo[0].played=0;
 region=num+1;
 cnumber=2<<num;
@@ -1340,7 +1403,7 @@ pjewel(num,1);
 pjewel(num,2);
 
 getnext(num);
-
+boards(num);
 
 if(gameinfo[num].autoplay==1)
     demo(num);
@@ -1364,6 +1427,7 @@ loop
 //    gameinfo[num].roll=0;
     donenext=0;
     setupmatch(num);
+    gameinfo[num].updateboards=1;
     cpos=0;
 // copy the next into the current
 // we need 3 copies.
@@ -1481,9 +1545,9 @@ repeat
             // populate play grid
             if(ypos>1)
                 gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
-                if(ypos>=1)
+                if(ypos>=2)
                     gameinfo[num].grid[xpos].col[ypos-1]=gameinfo[num].play[1];
-                    if(ypos>=2)
+                    if(ypos>=3)
                         gameinfo[num].grid[xpos].col[ypos-2]=gameinfo[num].play[0];
                     end
                 end
@@ -1500,8 +1564,10 @@ repeat
         end
 
         end
+      //  frame(50);
+    //else
+    //    frame;
     end
-
     frame;
 
 until (gameinfo[num].played==1);
