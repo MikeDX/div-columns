@@ -6,7 +6,7 @@ global
 // this allows a columns game to be started anywhere on scren
 // any any number of grids
 
-struct gameinfo[3]
+struct gameinfo[9]
 
     struct grid[6]
          col[16];
@@ -23,7 +23,7 @@ struct gameinfo[3]
     // struct that stores the grid used for the hints
     // and for the cpu player
 
-    struct hints[3]   // each "swap" variant
+    struct hints[9]   // each "swap" variant
 
         struct cols[6] // each possible position
 
@@ -70,7 +70,7 @@ struct gameinfo[3]
 END
 
 
-struct keys[3]
+struct keys[9]
     left;
     right;
     down;
@@ -79,7 +79,14 @@ struct keys[3]
     auto;
 end=_left,_right,_down,_space,_1,_3,
     _a,_d,_s,_w,_2,_4,
-    _left,_right,_down,_space,_1,_3;
+    _left,_right,_down,_space,_1,_3,
+     _a,_d,_s,_w,_2,_4,
+    _left,_right,_down,_space,_1,_3,
+     _a,_d,_s,_w,_2,_4,
+    _left,_right,_down,_space,_1,_3,
+     _a,_d,_s,_w,_2,_4,
+    _left,_right,_down,_space,_1,_3,
+                                    ;
 // set attract mode
 
 attract=1;
@@ -91,7 +98,7 @@ sounds[8];
 
 begin
 
-set_fps(50,2);
+//set_fps(50,2);
 
 
 // reset the timer
@@ -223,6 +230,17 @@ loop
             gameinfo[1].gameover=0;
             game(16,8,0);
             game(208,8,1);
+
+            /*
+            gameinfo[3].nextx=326;
+            game(336,8,3);
+
+            for(x=4;x<9;x++)
+                gameinfo[x].nextx=(x-4)*127;
+                game(16+((x-4)*127),248,x);
+            end
+            */
+
         end
 
     end
@@ -380,10 +398,7 @@ begin
     gameinfo[num].next[1]=0;
     gameinfo[num].next[2]=0;
 
-    // display the "next" jewels
-    shownext(num);
-
-    /// reset the grid to zero
+    // reset the grid to zero
     // and spawn jewels
     for(gx=0;gx<6;gx++)
         for(gy=15;gy>=0;gy--)
@@ -410,7 +425,7 @@ begin
                 graph=401+(num%2);
             end
 
-            if(key(keys[num].auto))
+            if(key(keys[num].auto) || gameinfo[num].autoplay==1)
                 gameinfo[num].autoplay=1;
                 gameinfo[num].jewels=rand(5,6);
 
@@ -980,18 +995,27 @@ process next(num,idx)
 private
 
 jewelid=-1;
+target=0;
+
 begin
 
 x=gameinfo[num].nextx+8;
-y=16+idx*16;
+y=16+idx*16+240*(num>3);
 
 graph=0;
 
 loop
+    if(father.father.y<24 && gameinfo[num].played==0 && gameinfo[num].play[idx]>0)
+        target=gameinfo[num].play[idx];
+    else
+        target=gameinfo[num].next[idx];
+    end
 
-    if(gameinfo[num].next[idx]!=jewelid)
-        jewelid=gameinfo[num].next[idx];
-        graph=1+(jewelid-1)*10;
+    if(target!=jewelid)
+        jewelid=target;
+        //gameinfo[num].next[idx];
+        graph=1+(target-1)*10;
+        //jewelid-1)*10;
     end
 
     frame;
@@ -1249,7 +1273,7 @@ gameinfo[num].newmatch=1;
 
 end
 
-process bestmove(num)
+function bestmove(num)
 
 private
 
@@ -1265,11 +1289,11 @@ begin
 //write_int(0,120*num,16,0,&gameinfo[num].tc);
 //write_int(0,120*num,32,0,&best);
 
-loop
+//loop
 
-if(gameinfo[num].checkbest==1)
+//if(gameinfo[num].checkbest==1)
     //debug;
-    frame(500);
+    //frame(500);
 
     bests=0;
     bestc=0;
@@ -1313,13 +1337,14 @@ if(gameinfo[num].checkbest==1)
 
     gameinfo[num].checkbest=0;
 
+//end
+
+//frame;
+
+//end
+
 end
 
-frame;
-
-end
-
-end
 
 process boards(num)
 
@@ -1413,6 +1438,10 @@ if(gameinfo[num].autoplay==1)
 
 end
 
+// display the "next" jewels
+shownext(num);
+
+
 //write_int(0,num*160,0,0,&x);
 //write_int(0,num*160,16,0,&ypos);
 loop
@@ -1424,11 +1453,14 @@ loop
     for(tp=0;tp<3;tp++)
         gameinfo[num].play[tp]=gameinfo[num].next[tp];
     end
-//    gameinfo[num].roll=0;
+    //    gameinfo[num].roll=0;
     donenext=0;
+    getnext(num);
     setupmatch(num);
     gameinfo[num].updateboards=1;
+    bestmove(num);
     cpos=0;
+    frame;
 // copy the next into the current
 // we need 3 copies.
 // current
@@ -1450,7 +1482,10 @@ x=40;//gameinfo[num].xpos+8+16*xpos;
 
 // reset the gameinfo to say the piece is "in play"
 gameinfo[num].played=0;
-bestmove(num);
+
+
+frame;
+
 
 // main loop, repeated until gameover
 repeat
@@ -1462,8 +1497,9 @@ repeat
         gameinfo[num].autoleft=0;
         gameinfo[num].autoright=0;
         gameinfo[num].autodown=0;
+        //frame;
 
-        if(gameinfo[num].auto==1)
+        if(gameinfo[num].auto==1 && gameinfo[num].played==0)
             if(gameinfo[num].ts!=cpos)
                 gameinfo[num].autoswap=1;
             end
@@ -1477,6 +1513,7 @@ repeat
             end
 
             if(gameinfo[num].played==0 && gameinfo[num].autoswap==0  && gameinfo[num].autoleft==0 && gameinfo[num].autoright==0)
+
                 gameinfo[num].autodown=1;
             end
         end
@@ -1493,11 +1530,11 @@ repeat
         gameinfo[num].play[2]=gameinfo[num].play[1];
         gameinfo[num].play[1]=gameinfo[num].play[0];
         gameinfo[num].play[0]=tp;
-        if(donenext==0)
-            for(tp=0;tp<3;tp++)
-                gameinfo[num].next[tp]=gameinfo[num].play[tp];
-            end
-        end
+       // if(donenext==0)
+       //     for(tp=0;tp<3;tp++)
+       //         gameinfo[num].next[tp]=gameinfo[num].play[tp];
+       //     end
+       // end
     end
 
 
@@ -1527,10 +1564,10 @@ repeat
         // check if block below is free
         d=1-d;
         y+=8;
-        if(y==32 && donenext==0)
-            getnext(num);
-            donenext=1;
-        end
+        //if(y==32 && donenext==0)
+        //    getnext(num);
+        //    donenext=1;
+       // end
 
         if(d==0)
             ypos++;
@@ -1556,19 +1593,27 @@ repeat
             end
             sound(sounds[3],256,256);
 
-            if(donenext==0)
-                getnext(num);
-            end
+//            if(donenext==0)
+//                getnext(num);
+//            end
 
             gameinfo[num].played=1;
+            frame(200);
         end
 
         end
-      //  frame(50);
-    //else
-    //    frame;
     end
-    frame;
+
+    if(gameinfo[num].autoplay==1)
+        frame(5);
+    else
+       frame;
+    end
+
+    //if(!gameinfo[num].autodown && !gameinfo[num].auto)
+    //    frame;
+    //end
+
 
 until (gameinfo[num].played==1);
 
@@ -1576,6 +1621,10 @@ until (gameinfo[num].played==1);
     gameinfo[num].autoleft=0;
     gameinfo[num].autoright=0;
     gameinfo[num].autodown=0;
+
+    for(tp=0;tp<3;tp++)
+        gameinfo[num].play[tp]=0;
+    end
 
     // hide the player jewels and wait until main loop
     // has done its checks to resume play
