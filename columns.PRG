@@ -1607,7 +1607,7 @@ begin
 
     for(x=0;x<3;x++)
         for(y=0;y<6;y++)
-            score=gameinfo[num].hints[x].cols[y].score+gameinfo[num].colpos[y];
+            score=gameinfo[num].hints[x].cols[y].score;//+gameinfo[num].colpos[y];
             possible[y]=0;
             if(score>best)
                 bests=x;
@@ -1713,7 +1713,7 @@ begin
 
             //debug;
 
-            multi=6;
+            multi=1;
             repeat
 
                 oldscore=gameinfo[num].hints[swap].cols[pos].score;
@@ -1909,7 +1909,7 @@ for(col=0;col<6;col++)   // each possible position
 
         // set score for this grid
         first=0;
-        multi=6;
+        multi=10;
         repeat
 
         oldscore=gameinfo[num].hints[matchswap].cols[matchpos].score;
