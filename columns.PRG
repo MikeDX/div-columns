@@ -94,7 +94,7 @@ struct gameinfo[maxgames]
 
 END
 
-levels[20]=20,50,80,120,150,180,210,240,270,300,330,360,390,420,450,480,510,100000000;
+levels[20]=35,70,105,140,150,180,210,240,270,300,330,360,390,420,450,480,510,100000000;
 
 
 struct keys[maxgames]
@@ -135,6 +135,10 @@ begin
 
     // show boot screen
     boot();
+
+    for(x=0;x<20;x++)
+        levels[x]=(x+1)*35;
+    end
 
     // next piece position for dual screen
     gameinfo[0].nextx=120;
@@ -339,7 +343,7 @@ begin
     y=7*16+8;
     //flip=num*16;
     // set number of random jewels in this game
-    gameinfo[num].jewels=4;//;//6;//+rand(0,2);
+    gameinfo[num].jewels=6;//4;//;//6;//+rand(0,2);
     // set the game zpos ypos
     gameinfo[num].xpos=0;//xpos;
     gameinfo[num].ypos=0;//ypos;
