@@ -94,7 +94,7 @@ struct gameinfo[maxgames]
 
 END
 
-levels[20]=10,40,80,120,150,180,210,240,270,300,330,360,390,420,450,480,510,100000000;
+levels[20]=20,50,80,120,150,180,210,240,270,300,330,360,390,420,450,480,510,100000000;
 
 
 struct keys[maxgames]
@@ -726,7 +726,7 @@ if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
     graph=1+10*(abs(gameinfo[num].grid[xpos].col[ypos])-1);
     gameinfo[num].grid[xpos].col[ypos]=0;
 
-    gameinfo[num].incscore+=((30*(gameinfo[num].level+1))*gameinfo[num].chain);
+    gameinfo[num].incscore+=(10*(gameinfo[num].level+1))*gameinfo[num].chain;
     frame;
 
     while(gameinfo[num].smash>8)
@@ -883,6 +883,7 @@ loop
                 gameinfo[num].grid[xpos-1].col[ypos]=-jewelid;
                 gameinfo[num].grid[xpos+1].col[ypos]=-jewelid;
                 gameinfo[num].grid[xpos].col[ypos]=-jewelid;
+
                 gameinfo[num].matched=1;
             end
 
@@ -984,6 +985,9 @@ gameover=0;
 tp=0;
 donenext=0;
 cpos=0;
+repeatdelay=5;
+repeatcount=0;
+oldkey=0;
 
 
 begin
@@ -1010,6 +1014,7 @@ end
 
 // display the "next" jewels
 shownext(num);
+
 //newpoints(num);
 
 
@@ -1064,6 +1069,17 @@ frame;
 // main loop, repeated until gameover
 repeat
 
+    if(oldkey!=0)
+        if(!key(oldkey))
+            oldkey=0;
+        end
+
+        if(repeatcount<repeatdelay+1)
+            repeatcount++;
+        end
+
+    end
+
     // auto play
     if(gameinfo[num].autoplay==1)
         //if(key(keys[num].start || key(keys[num].swap)))
@@ -1098,10 +1114,26 @@ repeat
 
     end
 
-    if(key(keys[num].swap) || gameinfo[num].autoswap==1)
-        //if(gameinfo[num].autoplay==0);
-            sound(sounds[6],256,256);
-        //end
+    if(key(keys[num].swap) || key(keys[num].up) || gameinfo[num].autoswap==1)
+
+        if((oldkey!=keys[num].swap && oldkey!=keys[num].up) || repeatcount>repeatdelay)
+
+        if(key(keys[num].swap))
+            if(oldkey!=keys[num].swap)
+                repeatcount=0;
+                oldkey=keys[num].swap;
+            end
+        end
+
+        if(key(keys[num].up))
+            if(oldkey!=keys[num].up)
+                repeatcount=0;
+                oldkey=keys[num].up;
+            end
+        end
+
+
+        sound(sounds[6],256,256);
 
         cpos++;
         if(cpos==3)
@@ -1111,32 +1143,46 @@ repeat
         gameinfo[num].play[2]=gameinfo[num].play[1];
         gameinfo[num].play[1]=gameinfo[num].play[0];
         gameinfo[num].play[0]=tp;
-       // if(donenext==0)
-       //     for(tp=0;tp<3;tp++)
-       //         gameinfo[num].next[tp]=gameinfo[num].play[tp];
-       //     end
-       // end
+
+    end
+
     end
 
 
 
-    if(gameinfo[num].autoleft==1 || (key(keys[num].left) && xpos>0))
+    if(gameinfo[num].autoleft==1 || (scan_code == keys[num].left && xpos>0))
+    if(oldkey!=keys[num].left || repeatcount>repeatdelay)
+
+        if(oldkey!=keys[num].left)
+            repeatcount=0;
+            oldkey=keys[num].left;
+        end
+
         if(gameinfo[num].grid[xpos-1].col[ypos]==0 &&
          gameinfo[num].grid[xpos-1].col[ypos-1*(ypos>0)]==0)
             x-=16;
             xpos--;
         end
+    end
 
     end
 
 
 
-    if(gameinfo[num].autoright==1 || (key(keys[num].right) && xpos<5))
+    if(gameinfo[num].autoright==1 || (scan_code == keys[num].right && xpos<5) )
+    if(oldkey!=keys[num].left || repeatcount>repeatdelay)
+
+        if(oldkey!=keys[num].left)
+            repeatcount=0;
+            oldkey=keys[num].left;
+        end
+
         if(gameinfo[num].grid[xpos+1].col[ypos]==0 &&
           gameinfo[num].grid[xpos+1].col[ypos-1*(ypos>0)]==0)
             x+=16;
             xpos++;
         end
+    end
     end
 
     if(key(keys[num].down) || timer[1]>dropnext || gameinfo[num].autodown==1)
@@ -1528,7 +1574,7 @@ cnumber=gameinfo[num].cnumber;
 
       //  debug;
     end
-    frame(1000);
+    frame(3500);
 
     gameinfo[num].score+=score;
     score=0;
@@ -1571,6 +1617,7 @@ begin
             flags=0;
 
             if(y-sy>32)
+                y+=4;
                 flags=4;
             end
 
