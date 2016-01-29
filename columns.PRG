@@ -67,6 +67,8 @@ struct gameinfo[maxgames]
     xpos;
     ypos;
 
+    incscore=0;
+    newscore=0;
 
     nextx;
     played=1;
@@ -466,12 +468,20 @@ begin
 
             if(gameinfo[num].matched>0)
                 gameinfo[num].smash=28;
+                frame;
+
+                gameinfo[num].newscore=gameinfo[num].incscore;
+                gameinfo[num].incscore=0;
+                newpoints(num);
+                frame;
+
                 repeat
 
                     frame;//(200);
                     if(gameinfo[num].smash==8)
                     // && gameinfo[num].autoplay==0);
                         sound(sounds[0],512,256);
+
                     end
 
                     if(gameinfo[num].smash<7)
@@ -484,6 +494,7 @@ begin
             end
 
             gameinfo[num].checkmatch=0;
+
 
             repeat  // while falls
                 falls=0;
@@ -511,7 +522,6 @@ begin
 
             gameinfo[num].checkmatch=1;
             gameinfo[num].matched=0;
-
             frame;
 
             gameinfo[num].chain++;
@@ -716,6 +726,9 @@ if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
     graph=1+10*(abs(gameinfo[num].grid[xpos].col[ypos])-1);
     gameinfo[num].grid[xpos].col[ypos]=0;
 
+    gameinfo[num].incscore+=((30*(gameinfo[num].level+1))*gameinfo[num].chain);
+    frame;
+
     while(gameinfo[num].smash>8)
         size=0;
         if(gameinfo[num].smash%4<2)
@@ -737,7 +750,6 @@ if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
 
     gameinfo[num].jewelcount++;
 
-    gameinfo[num].score+=((30*gameinfo[num].level+1)*gameinfo[num].chain);
 
 
 
@@ -998,7 +1010,7 @@ end
 
 // display the "next" jewels
 shownext(num);
-newpoints(num);
+//newpoints(num);
 
 
 //write_int(0,num*160,0,0,&x);
@@ -1450,7 +1462,13 @@ xoff;
 yoff;
 
 sy=0;
+score=0;
+mscore=0;
+scg=0;
+pos=0;
+d=0;
 
+chain=0;
 
 begin
 
@@ -1463,9 +1481,10 @@ end
 
 if(num==1)
 //160,88
-    xoff=160;
+    xoff=172;
     yoff=88;
 end
+//yoff+=8;
 
 x=16+xoff;
 y=yoff-16;
@@ -1473,35 +1492,92 @@ sy=y;
 
 graph=10;
 file=numbersfpg;
+
 //ctype=c_scroll;
 cnumber=gameinfo[num].cnumber;
 
-loop
-y+=4;
-flags=0;
+//write_int(1,x,y+20,4,&chain);
 
-if(y-sy>32)
-    flags=4;
-end
-
-frame;
-//region++;
-//region=region%10;
-
-//if(out_region(id,region))
-//y=16;
-//end
-//y=y%32;
-if(y-sy>128)
+//loop
     y=sy;
-end
+    x=16+xoff+16;
+
+    while(gameinfo[num].newscore==0)
+        frame;
+    end
+    chain=gameinfo[num].chain;
+    score = gameinfo[num].newscore;
+    mscore=score;
+    gameinfo[num].newscore=0;
+    //frame;
+
+    while(mscore>0)
+        scg=mscore%10;
+        mscore-=scg;
+        mscore/=10;
+
+        if(scg==0)
+            scg=10;
+        end
+
+
+        x-=8;
+        pos++;
+
+        scorenum(region,num,x,y,scg,pos,sy,chain);
+
+      //  debug;
+    end
+    frame(1000);
+
+    gameinfo[num].score+=score;
+    score=0;
+
+//end
 
 
 end
 
+process scorenum(region,num,x,y,scg,pos,sy,chain)
+private
+d=0;
 
-end
+begin
 
+    file=numbersfpg;
+
+        graph=scg;
+
+        if(scg==0)
+            graph=10;
+        end
+
+        graph+=10*(chain-1);
+
+        frame(pos*200);
+
+        repeat
+
+            y+=4;
+
+            if(y-sy==24)
+                d=0;
+                repeat
+                    frame;
+                    d++;
+                until (d==21);
+            end
+            //graph=scg;
+            flags=0;
+
+            if(y-sy>32)
+                flags=4;
+            end
+
+            frame;
+
+        until(y-sy>64)
+    end
 
 
 // END OF GAME PROCESES
