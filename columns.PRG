@@ -1154,7 +1154,7 @@ repeat
 
 
 
-    if(gameinfo[num].autoleft==1 || (scan_code == keys[num].left && xpos>0))
+    if(gameinfo[num].autoleft==1 || (key(keys[num].left) && xpos>0))
     if(oldkey!=keys[num].left || repeatcount>repeatdelay)
 
         if(oldkey!=keys[num].left)
@@ -1173,12 +1173,12 @@ repeat
 
 
 
-    if(gameinfo[num].autoright==1 || (scan_code == keys[num].right && xpos<5) )
-    if(oldkey!=keys[num].left || repeatcount>repeatdelay)
+    if(gameinfo[num].autoright==1 || (key(keys[num].right) && xpos<5) )
+    if(oldkey!=keys[num].right || repeatcount>repeatdelay)
 
-        if(oldkey!=keys[num].left)
+        if(oldkey!=keys[num].right)
             repeatcount=0;
-            oldkey=keys[num].left;
+            oldkey=keys[num].right;
         end
 
         if(gameinfo[num].grid[xpos+1].col[ypos]==0 &&
