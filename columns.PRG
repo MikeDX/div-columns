@@ -2,7 +2,7 @@ program columns;
 
 const
 
-maxgames=3;
+maxgames=4;
 
 
 global
@@ -115,15 +115,18 @@ timeout=0;
 
 sounds[8];
 
+numbersfpg=0;
 
 begin
 
     // setup our video mode
     set_mode(320240);
-    set_fps(50,2);
+    //set_fps(50,2);
 
     // load our graphics
     load_fpg("columns/columns.FPG");
+    numbersfpg=load_fpg("columns/numbers.fpg");
+
     load_fnt("columns/columns.fnt");
     // load sounds
     load_sounds();
@@ -995,6 +998,7 @@ end
 
 // display the "next" jewels
 shownext(num);
+newpoints(num);
 
 
 //write_int(0,num*160,0,0,&x);
@@ -1438,6 +1442,67 @@ begin
 end
 
 end
+
+process newpoints(num)
+
+private
+xoff;
+yoff;
+
+sy=0;
+
+
+begin
+
+region=num+1+maxgames;
+
+if(num==0)
+    xoff=128;
+    yoff=64;
+end
+
+if(num==1)
+//160,88
+    xoff=160;
+    yoff=88;
+end
+
+x=16+xoff;
+y=yoff-16;
+sy=y;
+
+graph=10;
+file=numbersfpg;
+//ctype=c_scroll;
+cnumber=gameinfo[num].cnumber;
+
+loop
+y+=4;
+flags=0;
+
+if(y-sy>32)
+    flags=4;
+end
+
+frame;
+//region++;
+//region=region%10;
+
+//if(out_region(id,region))
+//y=16;
+//end
+//y=y%32;
+if(y-sy>128)
+    y=sy;
+end
+
+
+end
+
+
+end
+
+
 
 // END OF GAME PROCESES
 
