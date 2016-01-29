@@ -98,13 +98,14 @@ levels[20]=10,40,80,120,150,180,210,240,270,300,330,360,390,420,450,480,510,1000
 struct keys[maxgames]
     left;
     right;
+    up;
     down;
     swap;
     start;
     auto;
-end=_left,_right,_down,_space,_1,_3,
-    _a,_d,_s,_w,_2,_4,
-    _left,_right,_down,_space,_1,_3,
+end=_left,_right,_up,_down,_space,_1,_3,
+    _a,_d,_w,_s,_w,_2,_4,
+    _left,_right,_up,_down,_space,_1,_3,
                                     ;
 // set attract mode
 
@@ -119,6 +120,7 @@ begin
 
     // setup our video mode
     set_mode(320240);
+    set_fps(50,2);
 
     // load our graphics
     load_fpg("columns/columns.FPG");
@@ -341,16 +343,22 @@ begin
     // xpos now only used to setup the scroll / region
     define_region(num+1,xpos,ypos,96,208);
     start_scroll(num+1,file,0,301,num+1,15);
+
+    // put the folowing in an array!
+
     if(num==0)
         write_int(1,120,114,3,&gameinfo[num].score);
         write_int(1,120,154,3,&gameinfo[num].level);
         write_int(1,120,186,3,&gameinfo[num].jewelcount);
+        define_region(num+1+maxgames,128,64,40,46);  // score region
     end
 
     if(num==1)
         write_int(1,198,138,5,&gameinfo[num].score);
         write_int(1,198,178,5,&gameinfo[num].level);
         write_int(1,198,210,5,&gameinfo[num].jewelcount);
+        define_region(num+1+maxgames,160,88,40,46);  // score region
+
     end
 
     //jewelcount);
@@ -405,16 +413,18 @@ begin
 
             if(key(keys[num].auto) || gameinfo[num].autoplay==1)
                 gameinfo[num].autoplay=1;
-                gameinfo[num].jewels=6;//rand(5,6);
+                //gameinfo[num].jewels=6;//rand(5,6);
 
             end
 
 
-            if(key(keys[num].start) || key(keys[num].swap) || key(keys[num].auto))
+            if(key(keys[num].start) || key(keys[num].swap) || key(keys[num].up) || key(keys[num].auto))
                 gameinfo[num].autoplay=0;
                 gameinfo[num].score=0;
                 gameinfo[num].level=0;
                 gameinfo[num].jewelcount=0;
+                gameinfo[num].jewels=4;
+                gameinfo[num].played=0;
 
                 signal(gameinfo[num].playerid,s_kill_tree);
                 //frame;
@@ -509,6 +519,9 @@ begin
 
         if(gameinfo[num].jewelcount>levels[gameinfo[num].level])
             gameinfo[num].level++;
+            if(gameinfo[num].level<3)
+                gameinfo[num].jewels=gameinfo[num].level+4;
+            end
             sound(sounds[4],256,256);
         end
 
@@ -727,7 +740,7 @@ if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
 
 end
 
-    if(gameinfo[num].played==0 && gameinfo[num].grid[xpos].col[ypos]>0 &&
+    if(gameinfo[num].level<2 && gameinfo[num].played==0 && gameinfo[num].grid[xpos].col[ypos]>0 &&
         gameinfo[num].grid[xpos].matched[ypos]>0)
 
         if(timer[0]%20<10);
@@ -1037,10 +1050,10 @@ repeat
 
     // auto play
     if(gameinfo[num].autoplay==1)
-        if(key(keys[num].start || key(keys[num].swap)))
-            gameinfo[num].gameover=1;
-            break;
-        end
+        //if(key(keys[num].start || key(keys[num].swap)))
+        //    gameinfo[num].gameover=1;
+        //    break;
+       // end
 
         gameinfo[num].autoswap=0;
         gameinfo[num].autoleft=0;
@@ -1069,7 +1082,7 @@ repeat
 
     end
 
-    if(scan_code == keys[num].swap || gameinfo[num].autoswap==1)
+    if(key(keys[num].swap) || gameinfo[num].autoswap==1)
         //if(gameinfo[num].autoplay==0);
             sound(sounds[6],256,256);
         //end
@@ -1091,7 +1104,7 @@ repeat
 
 
 
-    if(gameinfo[num].autoleft==1 || (scan_code == keys[num].left && xpos>0))
+    if(gameinfo[num].autoleft==1 || (key(keys[num].left) && xpos>0))
         if(gameinfo[num].grid[xpos-1].col[ypos]==0 &&
          gameinfo[num].grid[xpos-1].col[ypos-1*(ypos>0)]==0)
             x-=16;
@@ -1102,7 +1115,7 @@ repeat
 
 
 
-    if(gameinfo[num].autoright==1 || (scan_code == keys[num].right && xpos<5))
+    if(gameinfo[num].autoright==1 || (key(keys[num].right) && xpos<5))
         if(gameinfo[num].grid[xpos+1].col[ypos]==0 &&
           gameinfo[num].grid[xpos+1].col[ypos-1*(ypos>0)]==0)
             x+=16;
@@ -1150,7 +1163,7 @@ repeat
                         gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
                     end
                 //end
-                                    else
+                else
                     gameinfo[num].gameover=1;
                 end
 
@@ -1162,17 +1175,17 @@ repeat
             frame;
             x=-100;
             y=-100;
-            frame(200);
+            //frame(200);
         end
 
         end
     end
 
-    if(gameinfo[num].autoplay==1)
-        frame(5);
-    else
+    //if(gameinfo[num].autoplay==1)
+    //    frame(5);
+    //else
        frame;
-    end
+    //end
 
     //if(!gameinfo[num].autodown && !gameinfo[num].auto)
     //    frame;
