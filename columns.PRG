@@ -123,7 +123,7 @@ begin
 
     // setup our video mode
     set_mode(320240);
-    //set_fps(50,2);
+    set_fps(30,2);
 
     // load our graphics
     load_fpg("columns/columns.FPG");
@@ -139,6 +139,8 @@ begin
     for(x=0;x<20;x++)
         levels[x]=(x+1)*35;
     end
+    levels[19]=max_int;
+
 
     // next piece position for dual screen
     gameinfo[0].nextx=120;
@@ -359,14 +361,14 @@ begin
         write_int(1,120,114,3,&gameinfo[num].score);
         write_int(1,120,154,3,&gameinfo[num].level);
         write_int(1,120,186,3,&gameinfo[num].jewelcount);
-        define_region(num+1+maxgames,128,64,40,46);  // score region
+        define_region(num+1+maxgames,110,64,60,46);  // score region
     end
 
     if(num==1)
         write_int(1,198,138,5,&gameinfo[num].score);
         write_int(1,198,178,5,&gameinfo[num].level);
         write_int(1,198,210,5,&gameinfo[num].jewelcount);
-        define_region(num+1+maxgames,160,88,40,46);  // score region
+        define_region(num+1+maxgames,160,88,60,46);  // score region
 
     end
 
@@ -443,7 +445,7 @@ begin
 
             if(key(keys[num].auto) || gameinfo[num].autoplay==1)
                 gameinfo[num].autoplay=1;
-                gameinfo[num].jewels=6;//rand(5,6);
+                gameinfo[num].jewels=6;//4;//6;//rand(5,6);
 
             end
             frame;
@@ -534,7 +536,7 @@ begin
 
         gameinfo[num].checkmatch=0;
 
-        if(gameinfo[num].jewelcount>levels[gameinfo[num].level])
+        if(gameinfo[num].jewelcount>levels[gameinfo[num].level] && gameinfo[num].level<20)
             gameinfo[num].level++;
             if(gameinfo[num].level<3)
                 gameinfo[num].jewels=gameinfo[num].level+4;
@@ -1517,6 +1519,8 @@ mscore=0;
 scg=0;
 pos=0;
 d=0;
+snum;
+slen;
 
 chain=0;
 
@@ -1525,7 +1529,7 @@ begin
 region=num+1+maxgames;
 
 if(num==0)
-    xoff=128;
+    xoff=116;
     yoff=64;
 end
 
@@ -1560,6 +1564,11 @@ cnumber=gameinfo[num].cnumber;
     mscore=score;
     gameinfo[num].newscore=0;
     //frame;
+    snum = itoa(score);
+
+    slen = strlen(snum);
+
+//    debug;
 
     while(mscore>0)
         scg=mscore%10;
@@ -1574,7 +1583,7 @@ cnumber=gameinfo[num].cnumber;
         x-=8;
         pos++;
 
-        scorenum(region,num,x,y,scg,pos,sy,chain);
+        scorenum(region,num,x,y,scg,pos,sy,chain,slen);
 
       //  debug;
     end
@@ -1588,11 +1597,14 @@ cnumber=gameinfo[num].cnumber;
 
 end
 
-process scorenum(region,num,x,y,scg,pos,sy,chain)
+process scorenum(region,num,x,y,scg,pos,sy,chain,slen)
 private
 d=0;
 
 begin
+    if(num==0)
+        x+=(slen-3)*8;
+    end
 
     file=numbersfpg;
 
