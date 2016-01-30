@@ -92,9 +92,12 @@ struct gameinfo[maxgames]
     ctype;
     cnumber;
 
+    magic=1;
+    magicmatch=0;
+
 END
 
-levels[20]=35,70,105,140,150,180,210,240,270,300,330,360,390,420,450,480,510,100000000;
+levels[20]=10,70,105,140,150,180,210,240,270,300,330,360,390,420,450,480,510,100000000;
 
 
 struct keys[maxgames]
@@ -137,8 +140,8 @@ begin
     // show boot screen
     boot();
 
-    for(x=0;x<20;x++)
-        levels[x]=(x+1)*35;
+    for(x=1;x<20;x++)
+        levels[x]=levels[0]+(x+1)*40;
     end
     levels[19]=max_int;
 
@@ -437,6 +440,7 @@ begin
                 gameinfo[num].jewelcount=0;
                 gameinfo[num].jewels=4;
                 gameinfo[num].played=0;
+                gameinfo[num].magic=0;
 
                 signal(gameinfo[num].playerid,s_kill_tree);
                 //frame;
@@ -473,11 +477,13 @@ begin
 
             frame;
 
+            gameinfo[num].magicmatch=0;
+
             if(gameinfo[num].matched>0)
                 gameinfo[num].smash=28;
                 frame;
 
-                gameinfo[num].newscore=gameinfo[num].incscore;
+                gameinfo[num].newscore=(30*(gameinfo[num].level+1)*gameinfo[num].chain)*gameinfo[num].incscore;
                 gameinfo[num].incscore=0;
                 newpoints(num);
                 frame;
@@ -543,6 +549,10 @@ begin
                 gameinfo[num].jewels=gameinfo[num].level+4;
             end
             sound(sounds[4],256,256);
+            if(gameinfo[num].level%5==1)
+                gameinfo[num].magic=1;
+            end
+
         end
 
         if(attract==1)
@@ -682,11 +692,16 @@ function getnext(num)
 
 begin
 
+
 while(x<3)
-    gameinfo[num].next[x]=rand(1,gameinfo[num].jewels);
+    if(gameinfo[num].magic==1)
+        gameinfo[num].next[x]=10;
+    else
+        gameinfo[num].next[x]=rand(1,gameinfo[num].jewels);
+    end
     x++;
 end
-
+gameinfo[num].magic=0;
 return;
 
 end
@@ -711,7 +726,6 @@ matchpos;
 matchswap;
 
 
-
 begin
 graph=0;
 region=num+1;
@@ -727,16 +741,22 @@ if(gameinfo[num].autoplay==1)
     //flags=4;
 end
 
-if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0)
+if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0 ||
+    (gameinfo[num].magicmatch>0 && gameinfo[num].magicmatch==gameinfo[num].grid[xpos].col[ypos] ))
     gameinfo[num].grid[xpos].matched[ypos]=0;
-
-    graph=1+10*(abs(gameinfo[num].grid[xpos].col[ypos])-1);
+    jewelid=abs(gameinfo[num].grid[xpos].col[ypos]);
+    graph=1+10*(jewelid-1);
     gameinfo[num].grid[xpos].col[ypos]=0;
 
-    gameinfo[num].incscore+=(10*(gameinfo[num].level+1))*gameinfo[num].chain;
+
+    //gameinfo[num].incscore+=(10*(gameinfo[num].level+1))*gameinfo[num].chain;
     frame;
 
     while(gameinfo[num].smash>8)
+        if(jewelid==10)
+            graph=70+(timer[0]/5)%6;//+offs;
+        end
+
         size=0;
         if(gameinfo[num].smash%4<2)
            size=100;
@@ -837,12 +857,18 @@ loop
             graph = 1+(jewelid-1)*10;
         end
 
+
+
     end
     if(counter>0)
         counter--;
     end
 
-    if(jewelid>0 && counter==0)
+    if(jewelid==10)
+        graph=70+(timer[0]/5)%6;//+offs;
+    end
+
+    if(jewelid>0 && jewelid<10  && counter==0)
         if(shimmer==0)
             if(above==0)
                 if(ypos>0)
@@ -880,6 +906,7 @@ loop
                 gameinfo[num].grid[xpos].col[ypos]=-jewelid;
                 gameinfo[num].grid[xpos].col[ypos+1]=-jewelid;
                 gameinfo[num].matched=1;
+                gameinfo[num].incscore++;
             end
         end
 
@@ -892,6 +919,7 @@ loop
                 gameinfo[num].grid[xpos].col[ypos]=-jewelid;
 
                 gameinfo[num].matched=1;
+                gameinfo[num].incscore++;
             end
 
             if(ypos>0)
@@ -903,6 +931,8 @@ loop
                     gameinfo[num].grid[xpos].col[ypos]=-jewelid;
 
                     gameinfo[num].matched=1;
+                    gameinfo[num].incscore++;
+
                 end
 
 
@@ -913,6 +943,8 @@ loop
                     gameinfo[num].grid[xpos+1].col[ypos-1]=-jewelid;
                     gameinfo[num].grid[xpos].col[ypos]=-jewelid;
                     gameinfo[num].matched=1;
+                    gameinfo[num].incscore++;
+
 
                 end
             end
@@ -969,6 +1001,11 @@ loop
         graph=1+(target-1)*10;
         //jewelid-1)*10;
     end
+
+    if(jewelid==10)
+        graph=70+(timer[0]/5)%6;//+offs;
+    end
+
 
     frame;
 
@@ -1056,7 +1093,7 @@ loop
 // since the next changes as the current comes into view
 
 // out half/tile position
-d=1;
+d=0;
 // exact grid positions
 xpos=2;
 ypos=1;
@@ -1114,7 +1151,6 @@ repeat
             end
 
             if(gameinfo[num].played==0 && gameinfo[num].autoswap==0  && gameinfo[num].autoleft==0 && gameinfo[num].autoright==0)
-
                 gameinfo[num].autodown=1;
             end
         end
@@ -1166,7 +1202,7 @@ repeat
         end
 
         if(gameinfo[num].grid[xpos-1].col[ypos]==0 &&
-         gameinfo[num].grid[xpos-1].col[ypos-1*(ypos>0)]==0)
+         gameinfo[num].grid[xpos-1].col[ypos-1*(ypos>1)]==0)
             x-=16;
             xpos--;
         end
@@ -1185,7 +1221,7 @@ repeat
         end
 
         if(gameinfo[num].grid[xpos+1].col[ypos]==0 &&
-          gameinfo[num].grid[xpos+1].col[ypos-1*(ypos>0)]==0)
+          gameinfo[num].grid[xpos+1].col[ypos-1*(ypos>1)]==0)
             x+=16;
             xpos++;
         end
@@ -1209,9 +1245,9 @@ repeat
 
         if(d==0)
             ypos++;
-        end
+       // end
 
-        if(d==1)
+        //if(d==0)
         if(ypos==15 || gameinfo[num].grid[xpos].col[ypos]!=0)
             y=y-8;
             //xpos=(x-8-(gameinfo[num].xpos))/16;
@@ -1230,6 +1266,10 @@ repeat
 
                     if(ypos>0)
                         gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
+                        if(gameinfo[num].play[2]==10)
+                            gameinfo[num].magicmatch=gameinfo[num].grid[xpos].col[ypos+1];
+                        end
+
                     end
                 //end
                 else
@@ -1292,8 +1332,9 @@ process pjewel(num,idx)
 
 private
 idy;
-
+//offs=0;
 // show the jewels the player has
+
 begin
     x=-100;
     priority=father.priority-1;
@@ -1305,13 +1346,16 @@ begin
 
     // repeat whilst not gameover
     loop
-        if(gameinfo[num].autoplay==1)
+       // if(gameinfo[num].autoplay==1)
             //flags=4;
-        end
+      //  end
 
         if(gameinfo[num].gameover==0)
             graph=(gameinfo[num].play[idx]-1)*10+1;
 
+            if(gameinfo[num].play[idx]==10)
+                graph=70+(timer[0]/5)%6;//+offs;
+            end
             // get coords from player
             x=father.x;
             y=father.y-16+idy;
