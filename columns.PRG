@@ -115,7 +115,7 @@ end=_left,_right,_up,_down,_space,_1,_3,
 // set attract mode
 
 attract=1;
-players=2;
+players=1;
 timeout=0;
 
 sounds[8];
@@ -374,6 +374,13 @@ begin
         write_int(1,198,210,5,&gameinfo[num].jewelcount);
         define_region(num+1+maxgames,160,88,60,46);  // score region
 
+    end
+
+    if(num==2)
+        write_int(1,102,138,5,&gameinfo[num].score);
+        write_int(1,102,178,5,&gameinfo[num].level);
+        write_int(1,102,210,5,&gameinfo[num].jewelcount);
+        define_region(num+1+maxgames,64,88,60,46);  // score region
     end
 
     //jewelcount);
@@ -1610,6 +1617,12 @@ if(num==1)
     xoff=172;
     yoff=88;
 end
+
+if(num==2)
+    xoff=76;
+    yoff=88;
+end
+
 //yoff+=8;
 
 x=16+xoff;
@@ -1756,6 +1769,8 @@ begin
     end
 
     clear_screen();
+
+    filljewels();
 
     // show the sega logo
     set_fps(60,2);
@@ -2403,3 +2418,46 @@ end
 
 
 
+
+function filljewels()
+
+begin
+
+for(x=8;x<320;x+=16)
+    for(y=8;y<240;y+=16)
+        jeweltest(x,y);
+    end
+end
+
+frame;
+
+while(get_id(type jeweltest));
+
+frame;
+
+end
+
+//frame(2400);
+
+end
+
+
+process jeweltest(x,y);
+
+private
+c;
+
+begin
+
+while(c<24);
+
+graph=1+10*rand(0,5);
+c++;
+
+frame;
+
+end
+
+frame(1200);
+
+end
