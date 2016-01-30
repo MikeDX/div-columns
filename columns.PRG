@@ -115,7 +115,7 @@ end=_left,_right,_up,_down,_space,_1,_3,
 // set attract mode
 
 attract=1;
-players=1;
+players=2;
 timeout=0;
 
 sounds[8];
@@ -138,7 +138,7 @@ begin
     load_sounds();
 
     // show boot screen
-    //boot();
+    boot();
 
     for(x=1;x<20;x++)
         levels[x]=levels[0]+(x+1)*40;
