@@ -475,16 +475,6 @@ begin
             // check for matches
             gameinfo[num].checkmatch=1;
 
-            from xpos=0 to 5;
-                from ypos = 3 to 15;
-                    if(gameinfo[num].grid[xpos].col[ypos]==10)
-            //            debug;
-                        gameinfo[num].magicmatch=gameinfo[num].grid[xpos].col[ypos+1];
-                        gameinfo[num].grid[xpos].col[ypos]=-10;
-
-                    end
-                end
-            end
 
             frame;
 
@@ -547,6 +537,20 @@ begin
 
             gameinfo[num].checkmatch=1;
             gameinfo[num].matched=0;
+
+            // check magic jewel glitch
+            from xpos=0 to 5;
+                from ypos = 3 to 15;
+                    if(gameinfo[num].grid[xpos].col[ypos]==10)
+            //            debug;
+                        gameinfo[num].magicmatch=gameinfo[num].grid[xpos].col[ypos+1];
+                        gameinfo[num].grid[xpos].col[ypos]=-10;
+                        gameinfo[num].matched=1;
+                    end
+                end
+            end
+
+
             frame;
 
             gameinfo[num].chain++;
