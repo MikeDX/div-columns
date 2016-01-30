@@ -124,6 +124,7 @@ begin
     // setup our video mode
     set_mode(320240);
     set_fps(30,2);
+    force_pal("PAL/visibone.PAL");
 
     // load our graphics
     load_fpg("columns/columns.FPG");
@@ -1058,11 +1059,11 @@ loop
 d=1;
 // exact grid positions
 xpos=2;
-ypos=0;
+ypos=1;
 
 // player box outline
 graph=300;
-y=-48;
+y=-32;
 x=40;//gameinfo[num].xpos+8+16*xpos;
 
 // reset the gameinfo to say the piece is "in play"
@@ -1686,8 +1687,9 @@ begin
     clear_screen();
 
     // show the sega logo
-
+    set_fps(60,2);
     fill3();
+    set_fps(30,2);
 
     graph=216;
     x=161;
