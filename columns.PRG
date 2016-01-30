@@ -124,7 +124,7 @@ begin
     // setup our video mode
     set_mode(320240);
     set_fps(30,2);
-    force_pal("PAL/visibone.PAL");
+    //force_pal("PAL/visibone.PAL");
 
     // load our graphics
     load_fpg("columns/columns.FPG");
