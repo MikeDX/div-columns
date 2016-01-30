@@ -141,7 +141,7 @@ begin
     boot();
 
     for(x=1;x<20;x++)
-        levels[x]=levels[0]+(x+1)*40;
+        levels[x]=levels[0]+(x+1)*25;
     end
     levels[19]=max_int;
 
@@ -508,7 +508,6 @@ begin
 
             gameinfo[num].checkmatch=0;
 
-
             repeat  // while falls
                 falls=0;
                 gaps=0;
@@ -524,6 +523,11 @@ begin
                                 if(gameinfo[num].grid[gx].col[gy-1]>0)
                                     gameinfo[num].grid[gx].col[gy]=gameinfo[num].grid[gx].col[gy-1];
                                     gameinfo[num].grid[gx].col[gy-1]=0;
+
+                                    //if(gameinfo[num].grid[gx].col[gy]==10)
+                                    //    fm=gameinfo[num].grid[gx].col[gy];
+                                    //end
+
                                     falls=1;
                                 end
                             end
@@ -549,7 +553,7 @@ begin
                 gameinfo[num].jewels=gameinfo[num].level+4;
             end
             sound(sounds[4],256,256);
-            if(gameinfo[num].level%5==1)
+            if(gameinfo[num].level%5==2)
                 gameinfo[num].magic=1;
             end
 
@@ -743,6 +747,7 @@ end
 
 if(gameinfo[num].smash>0 && gameinfo[num].grid[xpos].col[ypos]<0 ||
     (gameinfo[num].magicmatch>0 && gameinfo[num].magicmatch==gameinfo[num].grid[xpos].col[ypos] ))
+
     gameinfo[num].grid[xpos].matched[ypos]=0;
     jewelid=abs(gameinfo[num].grid[xpos].col[ypos]);
     graph=1+10*(jewelid-1);
@@ -897,6 +902,11 @@ loop
 
 
     if(gameinfo[num].checkmatch==1 && jewelid>0)
+
+        if(gameinfo[num].grid[xpos].col[ypos-1]==10);
+            gameinfo[num].magicmatch=jewelid;
+            gameinfo[num].matched=1;
+        end
 
         if(ypos>0)
             if(abs(gameinfo[num].grid[xpos].col[ypos-1])==jewelid &&
@@ -1056,6 +1066,7 @@ if(gameinfo[num].autoplay==1)
 
 end
 
+
 // display the "next" jewels
 shownext(num);
 
@@ -1076,6 +1087,11 @@ loop
     for(tp=0;tp<3;tp++)
         gameinfo[num].play[tp]=gameinfo[num].next[tp];
     end
+
+    if(gameinfo[num].play[0]==10)
+        sound(sounds[5],256,256);
+    end
+
     //    gameinfo[num].roll=0;
     donenext=0;
     getnext(num);
@@ -1156,6 +1172,11 @@ repeat
         end
 
     end
+
+    if(key(_c))
+        gameinfo[num].magic=1;
+    end
+
 
     if(key(keys[num].swap) || key(keys[num].up) || gameinfo[num].autoswap==1)
 
@@ -1266,8 +1287,11 @@ repeat
 
                     if(ypos>0)
                         gameinfo[num].grid[xpos].col[ypos]=gameinfo[num].play[2];
+
                         if(gameinfo[num].play[2]==10)
+                           // debug;
                             gameinfo[num].magicmatch=gameinfo[num].grid[xpos].col[ypos+1];
+                            gameinfo[num].matched=1;
                         end
 
                     end
