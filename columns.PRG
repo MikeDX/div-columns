@@ -1674,10 +1674,13 @@ begin
     clear_screen();
 
     // show the sega logo
+
+    fill3();
+
     graph=216;
-    x=160;
-    y=120;
-    size=200;
+    x=161;
+    y=121;
+    size=100;
 
     timer[0]=0;
 
@@ -2216,6 +2219,98 @@ end
 end
 
 
+
+function fill3()
+
+private
+
+map;
+
+
+begin
+while(key(_space))
+frame;
+end
+
+//set_fps(50,0);
+
+//set_mode(320240);
+//load_fpg("sega.FPG");
+map = 223;
+//load_map("segabw.pcx");
+
+graph=map;
+//size=300;
+
+x=160;
+y=120;
+
+fill2(map,2,2,1,120);
+
+repeat
+frame;
+until (!get_id(type fill) || key(_space));
+signal(type fill, s_kill);
+
+end
+
+
+process fill2(map,x,y,source,target)
+begin
+
+fill(map,x,y,source,target);
+
+end
+
+
+process fill(map,x,y,source,target)
+
+private
+pixel;
+xpos;
+ypos;
+begin
+//write_int(0,x*8,y*8,4,&pixel);
+
+pixel=map_get_pixel(file,map,x,y);
+if(pixel!=target)
+//source)
+//debug;
+map_put_pixel(file,map,x,y,target);
+frame;
+//end
+
+FROM xpos=-1 TO 1;
+//;xpos<2;xpos++)
+
+    FROM ypos=-1 to 1;
+    //for(ypos=-1;ypos<2;ypos++)
+        if(!(x+xpos==father.x && y+ypos==father.y) && x+xpos>=0 && y+ypos>=0 && !(xpos==0 && ypos==0))
+            pixel=map_get_pixel(file,map,x+xpos,y+ypos);
+            if(pixel==source)
+            //target)
+            //=source)
+            //    debug;
+                fill(map,x+xpos,y+ypos,source,target);
+                //frame(50);
+                //xpos=1;
+                //ypos=1;
+                //break;
+
+            end
+        end
+       // frame;
+
+    end
+    //frame;
+
+end
+
+//frame(50);
+
+end
+
+end
 
 
 
