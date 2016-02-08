@@ -143,6 +143,7 @@ begin
     for(x=1;x<20;x++)
         levels[x]=levels[0]+(x+1)*40;
     end
+
     levels[19]=max_int;
 
 
