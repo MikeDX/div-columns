@@ -110,8 +110,8 @@ struct keys[maxgames]
     auto;
 end=_left,_right,_up,_down,_space,_1,_3,
     _a,_d,_w,_s,_w,_2,_4,
-    _left,_right,_up,_down,_space,_1,_3,
-                                    ;
+    _left,_right,_up,_down,_space,_1,_3;
+
 // set attract mode
 
 attract=1;
