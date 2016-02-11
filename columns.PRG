@@ -1765,7 +1765,7 @@ begin
     // colour bars
     put_screen(0,209);
 
-    while(!key(_space) && timer[0]<500);
+    while(!key(_space))//)//e) && timer[0]<500);
         frame;
     end
 
@@ -1789,7 +1789,7 @@ begin
         frame;
     end
 
-// shrink logo to zero
+//shrink logo to zero
     while(size>0)
         size-=10;
         frame;
