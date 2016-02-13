@@ -101,7 +101,7 @@ END
 
 levels[20]=10,70,105,140,150,180,210,240,270,300,330,360,390,420,450,480,510,100000000;
 
-
+// key struct for each player
 struct keys[maxgames]
     left;
     right;
