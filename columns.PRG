@@ -97,6 +97,8 @@ struct gameinfo[maxgames]
 
 END
 
+// levels upgrade at this number of jewels removed - should be a formula
+
 levels[20]=10,70,105,140,150,180,210,240,270,300,330,360,390,420,450,480,510,100000000;
 
 
